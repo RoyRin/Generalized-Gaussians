@@ -1,0 +1,27 @@
+#!/bin/bash
+#SBATCH --job-name=cifar-test
+#SBATCH --array=0-7
+#SBATCH --qos=normal
+#SBATCH --gres=gpu:1
+#SBATCH --mem=20G
+#SBATCH -c 4
+#SBATCH --partition=gpu
+#SBATCH --output=/h/royrin/new_code/data-aware-dp/Opacus-PRV/tutorials/out/%A__%a.out
+#SBATCH --mail-user=royrinberg@gmail.com  
+#SBATCH --mail-type=ALL
+
+
+CODE_BASE=/h/royrin/new_code/data-aware-dp/
+
+set -x 
+pushd $CODE_BASE
+
+source /pkgs/anaconda3/bin/activate
+conda activate new-ilia
+
+echo "===="
+echo $SLURM_ARRAY_TASK_ID
+echo "---"
+python $CODE_BASE/Opacus-PRV/tutorials/beta_image_classifier.py $SLURM_ARRAY_TASK_ID
+
+

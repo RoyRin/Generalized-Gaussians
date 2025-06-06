@@ -1,0 +1,34 @@
+#!/bin/bash
+#SBATCH --job-name=cifar-test
+#SBATCH --array=0-72
+#SBATCH --partition=t4v2
+#SBATCH --gres=gpu:1
+#SBATCH --mem=20G
+#SBATCH -c 4
+#SBATCH --output=/h/royrin/new_code/data-aware-dp/Opacus-PRV/experiments/out/%A__%a.out
+#SBATCH --mail-user=royrinberg@gmail.com  
+#SBATCH --mail-type=ALL
+
+####SBATCH --qos=gpu
+#####SBATCH --partition=t4v2,rtx6000
+####SBATCH --qos=normaol
+###SBATCH --account=deadline
+####SBATCH --qos=deadline
+
+CODE_BASE=/h/royrin/new_code/data-aware-dp/
+
+set -x 
+pushd $CODE_BASE
+
+source /pkgs/anaconda3/bin/activate
+conda activate ilia-jax-dm # new-ilia
+
+echo "===="
+echo $SLURM_ARRAY_TASK_ID
+echo "---"
+SET PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
+
+python $CODE_BASE/Opacus-PRV/experiments/beta_image_classifier.py $SLURM_ARRAY_TASK_ID $SLURM_ARRAY_JOB_ID
+
+
+
