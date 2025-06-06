@@ -21,6 +21,7 @@ from opacus.validators.module_validator import ModuleValidator
 
 
 class InstanceNormValidator_test(unittest.TestCase):
+
     def setUp(self):
         self.in1 = nn.InstanceNorm1d(4, affine=True, track_running_stats=True)
         self.in2 = nn.InstanceNorm2d(4, affine=False, track_running_stats=True)

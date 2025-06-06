@@ -129,7 +129,6 @@ def scatter_normalization(train_loader,
             np.save(mean_path, mean)
             np.save(var_path, var)
 
-
     mean = torch.from_numpy(mean).to(device)
     var = torch.from_numpy(var).to(device)
     print("we did the normalization")
@@ -166,7 +165,6 @@ def get_scatternet_model(
                                      bn_stats=bn_stats,
                                      size=size)
 
-    
     return model
 
 
@@ -200,7 +198,7 @@ def get_scatternet_loaders(train_loader,
                            dataset="cifar10"):
     scattering, K, _ = get_scatter_transform(dataset)
     scattering.to(device)
-    
+
     train_loader = get_scattered_loader(train_loader,
                                         scattering,
                                         device,

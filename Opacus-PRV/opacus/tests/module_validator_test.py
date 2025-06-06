@@ -23,6 +23,7 @@ from torchvision.models import mobilenet_v3_small
 
 
 class ModuleValidator_test(unittest.TestCase):
+
     def setUp(self):
         self.original_model = mobilenet_v3_small()
         self.fixed_model = ModuleValidator.fix(self.original_model)
@@ -53,7 +54,9 @@ class ModuleValidator_test(unittest.TestCase):
         self.assertTrue(ModuleValidator.is_valid(unsupported_module))
 
     def test_is_valid_extra_param(self):
+
         class SampleNetWithExtraParam(nn.Module):
+
             def __init__(self):
                 super().__init__()
                 self.fc = nn.Linear(8, 16)
@@ -98,22 +101,24 @@ class ModuleValidator_test(unittest.TestCase):
     def test_fix_w_replace_bn_with_in(self):
         all_modules_before = self.original_model.modules()
         self.assertTrue(
-            all(
-                [
-                    not isinstance(module, nn.InstanceNorm2d)
-                    for module in all_modules_before
-                ]
-            )
-        )
+            all([
+                not isinstance(module, nn.InstanceNorm2d)
+                for module in all_modules_before
+            ]))
 
-        fixed_model = ModuleValidator.fix(self.original_model, replace_bn_with_in=True)
+        fixed_model = ModuleValidator.fix(self.original_model,
+                                          replace_bn_with_in=True)
         all_modules_after = fixed_model.modules()
         self.assertTrue(
-            any([isinstance(module, nn.InstanceNorm2d) for module in all_modules_after])
-        )
+            any([
+                isinstance(module, nn.InstanceNorm2d)
+                for module in all_modules_after
+            ]))
 
     def test_is_valid_non_learnable_bn(self):
+
         class SampleNetWithNonLearnableBN(nn.Module):
+
             def __init__(self):
                 super().__init__()
                 self.c1 = nn.Conv2d(8, 3, 4, 4)

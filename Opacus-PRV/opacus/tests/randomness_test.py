@@ -25,7 +25,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 
 def _epoch(model: nn.Module, optim: torch.optim.Optimizer, dl: DataLoader):
-    for (x,) in dl:
+    for (x, ) in dl:
         optim.zero_grad()
         out = model(x)
         loss = out.sum()
@@ -38,6 +38,7 @@ def _read_all(dl: DataLoader):
 
 
 class TensorCompareTestCase(unittest.TestCase):
+
     def assertNotEqualTensors(self, a: torch.Tensor, b: torch.Tensor):
         if a.shape != b.shape:
             return
@@ -48,15 +49,16 @@ class TensorCompareTestCase(unittest.TestCase):
 
 
 class DataLoaderRandomnessTest(TensorCompareTestCase):
+
     def setUp(self) -> None:
         self.batch_size = 8
         self.data = torch.randn(self.batch_size * 10, 32)
         self.dataset = TensorDataset(self.data)
 
     def _read_all_dp(self, dp_generator, original_generator=None):
-        dl = DataLoader(
-            self.dataset, batch_size=self.batch_size, generator=original_generator
-        )
+        dl = DataLoader(self.dataset,
+                        batch_size=self.batch_size,
+                        generator=original_generator)
         dpdl = DPDataLoader.from_data_loader(dl, generator=dp_generator)
         return _read_all(dpdl)
 
@@ -100,13 +102,16 @@ class DataLoaderRandomnessTest(TensorCompareTestCase):
         dp_gen = torch.Generator()
         orig_gen = torch.Generator()
         orig_gen.manual_seed(1337)
-        data1 = self._read_all_dp(dp_generator=dp_gen, original_generator=orig_gen)
+        data1 = self._read_all_dp(dp_generator=dp_gen,
+                                  original_generator=orig_gen)
         orig_gen.manual_seed(1337)
-        data2 = self._read_all_dp(dp_generator=dp_gen, original_generator=orig_gen)
+        data2 = self._read_all_dp(dp_generator=dp_gen,
+                                  original_generator=orig_gen)
         self.assertNotEqualTensors(data1, data2)
 
 
 class DataLoaderSwitchRandomnessTest(TensorCompareTestCase):
+
     def setUp(self) -> None:
         self.batch_size = 8
         self.data = torch.randn(self.batch_size * 10, 32)
@@ -121,7 +126,10 @@ class DataLoaderSwitchRandomnessTest(TensorCompareTestCase):
         )
         return _read_all(dl)
 
-    def _read_all_switch(self, orig_generator=None, new_generator=None, shuffle=True):
+    def _read_all_switch(self,
+                         orig_generator=None,
+                         new_generator=None,
+                         shuffle=True):
         dl = DataLoader(
             self.dataset,
             batch_size=self.batch_size,
@@ -147,7 +155,8 @@ class DataLoaderSwitchRandomnessTest(TensorCompareTestCase):
         other_gen = torch.Generator()
         other_gen.manual_seed(7331)
         orig_gen.manual_seed(1337)
-        data2 = self._read_all_switch(new_generator=other_gen, orig_generator=orig_gen)
+        data2 = self._read_all_switch(new_generator=other_gen,
+                                      orig_generator=orig_gen)
         self.assertNotEqualTensors(data1, data2)
 
     def test_switch_same_seed(self):
@@ -158,26 +167,30 @@ class DataLoaderSwitchRandomnessTest(TensorCompareTestCase):
         other_gen = torch.Generator()
         other_gen.manual_seed(1337)
         orig_gen.manual_seed(1337)
-        data2 = self._read_all_switch(new_generator=other_gen, orig_generator=orig_gen)
+        data2 = self._read_all_switch(new_generator=other_gen,
+                                      orig_generator=orig_gen)
         self.assertEqualTensors(data1, data2)
 
     def test_raise_sequential(self):
         orig_gen = torch.Generator()
         other_gen = torch.Generator()
         with self.assertRaises(ValueError):
-            self._read_all_switch(
-                orig_generator=orig_gen, new_generator=other_gen, shuffle=False
-            )
+            self._read_all_switch(orig_generator=orig_gen,
+                                  new_generator=other_gen,
+                                  shuffle=False)
 
 
 class OptimizerRandomnessTest(unittest.TestCase):
+
     def setUp(self) -> None:
         self.data = torch.randn(80, 32)
 
     def _init_training(self, generator, noise: float = 1.0):
         dl_gen = torch.Generator()
         dl_gen.manual_seed(42)
-        dl = DataLoader(TensorDataset(self.data), batch_size=8, generator=dl_gen)
+        dl = DataLoader(TensorDataset(self.data),
+                        batch_size=8,
+                        generator=dl_gen)
 
         model = nn.Linear(32, 16)
         torch.nn.init.ones_(model.weight)
@@ -202,7 +215,8 @@ class OptimizerRandomnessTest(unittest.TestCase):
 
         model2, optim2, dl2 = self._init_training(generator=None)
         _epoch(model2, optim2, dl2)
-        self.assertFalse(torch.allclose(model1._module.weight, model2._module.weight))
+        self.assertFalse(
+            torch.allclose(model1._module.weight, model2._module.weight))
 
     def test_no_noise(self):
         model1, optim1, dl1 = self._init_training(generator=None, noise=0.0)
@@ -211,7 +225,8 @@ class OptimizerRandomnessTest(unittest.TestCase):
         model2, optim2, dl2 = self._init_training(generator=None, noise=0.0)
         _epoch(model2, optim2, dl2)
 
-        self.assertTrue(torch.allclose(model1._module.weight, model2._module.weight))
+        self.assertTrue(
+            torch.allclose(model1._module.weight, model2._module.weight))
 
     def test_global_seed(self):
         model1, optim1, dl1 = self._init_training(generator=None)
@@ -221,7 +236,8 @@ class OptimizerRandomnessTest(unittest.TestCase):
         model2, optim2, dl2 = self._init_training(generator=None)
         torch.manual_seed(1337)
         _epoch(model2, optim2, dl2)
-        self.assertTrue(torch.allclose(model1._module.weight, model2._module.weight))
+        self.assertTrue(
+            torch.allclose(model1._module.weight, model2._module.weight))
 
     def test_generator(self):
         gen = torch.Generator()
@@ -230,7 +246,8 @@ class OptimizerRandomnessTest(unittest.TestCase):
 
         model2, optim2, dl2 = self._init_training(generator=gen)
         _epoch(model2, optim2, dl2)
-        self.assertFalse(torch.allclose(model1._module.weight, model2._module.weight))
+        self.assertFalse(
+            torch.allclose(model1._module.weight, model2._module.weight))
 
     def test_generator_with_global_seed(self):
         gen = torch.Generator()
@@ -241,7 +258,8 @@ class OptimizerRandomnessTest(unittest.TestCase):
         model2, optim2, dl2 = self._init_training(generator=gen)
         torch.manual_seed(1337)
         _epoch(model2, optim2, dl2)
-        self.assertFalse(torch.allclose(model1._module.weight, model2._module.weight))
+        self.assertFalse(
+            torch.allclose(model1._module.weight, model2._module.weight))
 
     def test_generator_seed(self):
         gen = torch.Generator()
@@ -252,7 +270,8 @@ class OptimizerRandomnessTest(unittest.TestCase):
         model2, optim2, dl2 = self._init_training(generator=gen)
         gen.manual_seed(8888)
         _epoch(model2, optim2, dl2)
-        self.assertTrue(torch.allclose(model1._module.weight, model2._module.weight))
+        self.assertTrue(
+            torch.allclose(model1._module.weight, model2._module.weight))
 
 
 def _init_generator(seed: Optional[int] = None):
@@ -265,13 +284,15 @@ def _init_generator(seed: Optional[int] = None):
 
 
 class PrivacyEngineSecureModeTest(unittest.TestCase):
+
     def setUp(self) -> None:
         self.data = torch.randn(80, 32)
 
     def _init_training(self, dl_generator=None):
-        dl = DataLoader(
-            TensorDataset(self.data), batch_size=8, shuffle=True, generator=dl_generator
-        )
+        dl = DataLoader(TensorDataset(self.data),
+                        batch_size=8,
+                        shuffle=True,
+                        generator=dl_generator)
 
         model = nn.Linear(32, 16)
         torch.nn.init.ones_(model.weight)
@@ -312,7 +333,8 @@ class PrivacyEngineSecureModeTest(unittest.TestCase):
         model2, optim2, dl2 = self._init_dp_training(secure_mode=False)
         _epoch(model2, optim2, dl2)
 
-        self.assertFalse(torch.allclose(model1._module.weight, model2._module.weight))
+        self.assertFalse(
+            torch.allclose(model1._module.weight, model2._module.weight))
 
     @unittest.skip("requires torchcsprng compatible with new pytorch versions")
     def test_raise_secure_mode(self):
@@ -328,7 +350,8 @@ class PrivacyEngineSecureModeTest(unittest.TestCase):
         torch.manual_seed(1337)
         _epoch(model2, optim2, dl2)
 
-        self.assertTrue(torch.allclose(model1._module.weight, model2._module.weight))
+        self.assertTrue(
+            torch.allclose(model1._module.weight, model2._module.weight))
 
     @unittest.skip("requires torchcsprng compatible with new pytorch versions")
     def test_secure_mode_global_seed(self):
@@ -340,81 +363,88 @@ class PrivacyEngineSecureModeTest(unittest.TestCase):
         torch.manual_seed(1337)
         _epoch(model2, optim2, dl2)
 
-        self.assertFalse(torch.allclose(model1._module.weight, model2._module.weight))
+        self.assertFalse(
+            torch.allclose(model1._module.weight, model2._module.weight))
 
     def test_dl_seed_with_noise(self):
-        model1, optim1, dl1 = self._init_dp_training(secure_mode=False, dl_seed=96)
+        model1, optim1, dl1 = self._init_dp_training(secure_mode=False,
+                                                     dl_seed=96)
         _epoch(model1, optim1, dl1)
 
-        model2, optim2, dl2 = self._init_dp_training(secure_mode=False, dl_seed=96)
+        model2, optim2, dl2 = self._init_dp_training(secure_mode=False,
+                                                     dl_seed=96)
         _epoch(model2, optim2, dl2)
 
-        self.assertFalse(torch.allclose(model1._module.weight, model2._module.weight))
+        self.assertFalse(
+            torch.allclose(model1._module.weight, model2._module.weight))
 
     def test_dl_seed_no_noise(self):
-        model1, optim1, dl1 = self._init_dp_training(
-            secure_mode=False, dl_seed=96, noise=0.0
-        )
+        model1, optim1, dl1 = self._init_dp_training(secure_mode=False,
+                                                     dl_seed=96,
+                                                     noise=0.0)
         _epoch(model1, optim1, dl1)
 
-        model2, optim2, dl2 = self._init_dp_training(
-            secure_mode=False, dl_seed=96, noise=0.0
-        )
+        model2, optim2, dl2 = self._init_dp_training(secure_mode=False,
+                                                     dl_seed=96,
+                                                     noise=0.0)
         _epoch(model2, optim2, dl2)
 
-        self.assertTrue(torch.allclose(model1._module.weight, model2._module.weight))
+        self.assertTrue(
+            torch.allclose(model1._module.weight, model2._module.weight))
 
     def test_seed(self):
-        model1, optim1, dl1 = self._init_dp_training(
-            secure_mode=False, dl_seed=96, noise_seed=17
-        )
+        model1, optim1, dl1 = self._init_dp_training(secure_mode=False,
+                                                     dl_seed=96,
+                                                     noise_seed=17)
         _epoch(model1, optim1, dl1)
 
-        model2, optim2, dl2 = self._init_dp_training(
-            secure_mode=False, dl_seed=96, noise_seed=17
-        )
+        model2, optim2, dl2 = self._init_dp_training(secure_mode=False,
+                                                     dl_seed=96,
+                                                     noise_seed=17)
         _epoch(model2, optim2, dl2)
 
-        self.assertTrue(torch.allclose(model1._module.weight, model2._module.weight))
+        self.assertTrue(
+            torch.allclose(model1._module.weight, model2._module.weight))
 
     def test_custom_and_global_seed(self):
-        model1, optim1, dl1 = self._init_dp_training(
-            secure_mode=False, dl_seed=96, noise_seed=17
-        )
+        model1, optim1, dl1 = self._init_dp_training(secure_mode=False,
+                                                     dl_seed=96,
+                                                     noise_seed=17)
         torch.manual_seed(1024)
         _epoch(model1, optim1, dl1)
 
-        model2, optim2, dl2 = self._init_dp_training(
-            secure_mode=False, dl_seed=96, noise_seed=17
-        )
+        model2, optim2, dl2 = self._init_dp_training(secure_mode=False,
+                                                     dl_seed=96,
+                                                     noise_seed=17)
         torch.manual_seed(2048)
         _epoch(model2, optim2, dl2)
 
-        self.assertTrue(torch.allclose(model1._module.weight, model2._module.weight))
+        self.assertTrue(
+            torch.allclose(model1._module.weight, model2._module.weight))
 
     def test_data_seed_consistency(self):
-        _, _, dl1 = self._init_dp_training(
-            secure_mode=False, dl_seed=1337, poisson_sampling=False
-        )
+        _, _, dl1 = self._init_dp_training(secure_mode=False,
+                                           dl_seed=1337,
+                                           poisson_sampling=False)
         data1 = _read_all(dl1)
 
-        _, _, dl1 = self._init_dp_training(
-            secure_mode=False, dl_seed=1337, poisson_sampling=False
-        )
+        _, _, dl1 = self._init_dp_training(secure_mode=False,
+                                           dl_seed=1337,
+                                           poisson_sampling=False)
         data2 = _read_all(dl1)
 
         self.assertTrue(torch.allclose(data1, data2))
 
     @unittest.skip("requires torchcsprng compatible with new pytorch versions")
     def test_secure_mode_no_poisson(self):
-        _, _, dl1 = self._init_dp_training(
-            secure_mode=True, dl_seed=1337, poisson_sampling=False
-        )
+        _, _, dl1 = self._init_dp_training(secure_mode=True,
+                                           dl_seed=1337,
+                                           poisson_sampling=False)
         data1 = _read_all(dl1)
 
-        _, _, dl1 = self._init_dp_training(
-            secure_mode=True, dl_seed=1337, poisson_sampling=False
-        )
+        _, _, dl1 = self._init_dp_training(secure_mode=True,
+                                           dl_seed=1337,
+                                           poisson_sampling=False)
         data2 = _read_all(dl1)
 
         self.assertFalse(torch.allclose(data1, data2))

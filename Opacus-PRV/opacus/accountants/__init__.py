@@ -17,7 +17,6 @@ from .gdp import GaussianAccountant
 from .prv import PRVAccountant
 from .rdp import RDPAccountant
 
-
 __all__ = [
     "IAccountant",
     "GaussianAccountant",

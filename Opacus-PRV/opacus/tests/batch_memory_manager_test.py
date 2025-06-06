@@ -24,6 +24,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 
 class Model(nn.Module):
+
     def __init__(self):
         super().__init__()
         self.fc = nn.Linear(5, 1)
@@ -38,18 +39,16 @@ class BatchMemoryManagerTest(unittest.TestCase):
     def setUp(self) -> None:
         self.data_size = 256
         self.inps = torch.randn(self.data_size, 5)
-        self.tgts = torch.randn(
-            self.data_size,
-        )
+        self.tgts = torch.randn(self.data_size, )
 
         self.dataset = TensorDataset(self.inps, self.tgts)
 
     def _init_training(self, batch_size=10, **data_loader_kwargs):
         model = Model()
         optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
-        data_loader = DataLoader(
-            self.dataset, batch_size=batch_size, **data_loader_kwargs
-        )
+        data_loader = DataLoader(self.dataset,
+                                 batch_size=batch_size,
+                                 **data_loader_kwargs)
 
         return model, optimizer, data_loader
 
@@ -85,11 +84,12 @@ class BatchMemoryManagerTest(unittest.TestCase):
             grad_sample_mode=self.GSM_MODE,
         )
         with BatchMemoryManager(
-            data_loader=data_loader,
-            max_physical_batch_size=max_physical_batch_size,
-            optimizer=optimizer,
+                data_loader=data_loader,
+                max_physical_batch_size=max_physical_batch_size,
+                optimizer=optimizer,
         ) as new_data_loader:
-            self.assertEqual(len(data_loader), len(data_loader.dataset) // batch_size)
+            self.assertEqual(len(data_loader),
+                             len(data_loader.dataset) // batch_size)
             self.assertEqual(
                 len(new_data_loader),
                 len(data_loader.dataset) // max_physical_batch_size,
@@ -107,12 +107,12 @@ class BatchMemoryManagerTest(unittest.TestCase):
 
                 if (i + 1) % batches_per_step > 0:
                     self.assertTrue(
-                        torch.allclose(model._module.fc.weight, weights_before)
-                    )
+                        torch.allclose(model._module.fc.weight,
+                                       weights_before))
                 else:
                     self.assertFalse(
-                        torch.allclose(model._module.fc.weight, weights_before)
-                    )
+                        torch.allclose(model._module.fc.weight,
+                                       weights_before))
                     weights_before = torch.clone(model._module.fc.weight)
 
     @given(
@@ -146,9 +146,9 @@ class BatchMemoryManagerTest(unittest.TestCase):
             grad_sample_mode=self.GSM_MODE,
         )
         with BatchMemoryManager(
-            data_loader=data_loader,
-            max_physical_batch_size=max_physical_batch_size,
-            optimizer=optimizer,
+                data_loader=data_loader,
+                max_physical_batch_size=max_physical_batch_size,
+                optimizer=optimizer,
         ) as new_data_loader:
             weights_before = torch.clone(model._module.fc.weight)
             for i, (x, y) in enumerate(new_data_loader):
@@ -163,12 +163,12 @@ class BatchMemoryManagerTest(unittest.TestCase):
 
                 if len(x) == 0:
                     self.assertTrue(
-                        torch.allclose(model._module.fc.weight, weights_before)
-                    )
+                        torch.allclose(model._module.fc.weight,
+                                       weights_before))
                 else:
                     self.assertFalse(
-                        torch.allclose(model._module.fc.weight, weights_before)
-                    )
+                        torch.allclose(model._module.fc.weight,
+                                       weights_before))
                     weights_before = torch.clone(model._module.fc.weight)
 
     def test_equivalent_to_one_batch(self):
@@ -186,9 +186,9 @@ class BatchMemoryManagerTest(unittest.TestCase):
             grad_sample_mode=self.GSM_MODE,
         )
 
-        with BatchMemoryManager(
-            data_loader=data_loader, max_physical_batch_size=3, optimizer=optimizer
-        ) as data_loader:
+        with BatchMemoryManager(data_loader=data_loader,
+                                max_physical_batch_size=3,
+                                optimizer=optimizer) as data_loader:
             for x, y in data_loader:
                 out = model(x)
                 loss = (y - out).mean()
@@ -223,7 +223,8 @@ class BatchMemoryManagerTest(unittest.TestCase):
 
         vanilla_weights = model._module.fc.weight.detach()
 
-        self.assertTrue(torch.allclose(memory_manager_weights, vanilla_weights))
+        self.assertTrue(torch.allclose(memory_manager_weights,
+                                       vanilla_weights))
 
 
 class BatchMemoryManagerTestWithExpandedWeights(BatchMemoryManagerTest):

@@ -27,6 +27,7 @@ from opacus.accountants.utils import get_noise_multiplier
 
 
 class AccountingTest(unittest.TestCase):
+
     def test_rdp_accountant(self):
         noise_multiplier = 1.5
         sample_rate = 0.04
@@ -34,7 +35,8 @@ class AccountingTest(unittest.TestCase):
 
         accountant = RDPAccountant()
         for _ in range(steps):
-            accountant.step(noise_multiplier=noise_multiplier, sample_rate=sample_rate)
+            accountant.step(noise_multiplier=noise_multiplier,
+                            sample_rate=sample_rate)
 
         epsilon = accountant.get_epsilon(delta=1e-5)
         self.assertAlmostEqual(epsilon, 7.32911117143)
@@ -46,7 +48,8 @@ class AccountingTest(unittest.TestCase):
 
         accountant = GaussianAccountant()
         for _ in range(steps):
-            accountant.step(noise_multiplier=noise_multiplier, sample_rate=sample_rate)
+            accountant.step(noise_multiplier=noise_multiplier,
+                            sample_rate=sample_rate)
 
         epsilon = accountant.get_epsilon(delta=1e-5)
         self.assertLess(6.59, epsilon)
@@ -60,7 +63,8 @@ class AccountingTest(unittest.TestCase):
         accountant = PRVAccountant()
 
         for _ in range(steps):
-            accountant.step(noise_multiplier=noise_multiplier, sample_rate=sample_rate)
+            accountant.step(noise_multiplier=noise_multiplier,
+                            sample_rate=sample_rate)
 
         epsilon = accountant.get_epsilon(delta=1e-5)
         self.assertAlmostEqual(epsilon, 6.777395712150674)
@@ -132,12 +136,12 @@ class AccountingTest(unittest.TestCase):
         epsilon=st.floats(1.0, 10.0),
         epochs=st.integers(10, 100),
         sample_rate=st.sampled_from(
-            [1e-4, 2e-4, 5e-4, 1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1]
-        ),
+            [1e-4, 2e-4, 5e-4, 1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1]),
         delta=st.sampled_from([1e-4, 1e-5, 1e-6]),
     )
     @settings(deadline=10000)
-    def test_get_noise_multiplier_overshoot(self, epsilon, epochs, sample_rate, delta):
+    def test_get_noise_multiplier_overshoot(self, epsilon, epochs, sample_rate,
+                                            delta):
         noise_multiplier = get_noise_multiplier(
             target_epsilon=epsilon,
             target_delta=delta,
@@ -146,9 +150,8 @@ class AccountingTest(unittest.TestCase):
         )
 
         accountant = create_accountant(mechanism="rdp")
-        accountant.history = [
-            (noise_multiplier, sample_rate, int(epochs / sample_rate))
-        ]
+        accountant.history = [(noise_multiplier, sample_rate,
+                               int(epochs / sample_rate))]
 
         actual_epsilon = accountant.get_epsilon(delta=delta)
         self.assertLess(actual_epsilon, epsilon)
@@ -176,20 +179,23 @@ class AccountingTest(unittest.TestCase):
 
         accountant = RDPAccountant()
         for _ in range(steps):
-            accountant.step(noise_multiplier=noise_multiplier, sample_rate=sample_rate)
+            accountant.step(noise_multiplier=noise_multiplier,
+                            sample_rate=sample_rate)
 
         dummy_dest = {"dummy_k": "dummy_v"}
         # history should be equal but not the same instance
-        self.assertEqual(accountant.state_dict()["history"], accountant.history)
-        self.assertFalse(accountant.state_dict()["history"] is accountant.history)
+        self.assertEqual(accountant.state_dict()["history"],
+                         accountant.history)
+        self.assertFalse(
+            accountant.state_dict()["history"] is accountant.history)
         # mechanism populated to supplied dict
         self.assertEqual(
-            accountant.state_dict(dummy_dest)["mechanism"], accountant.mechanism
-        )
+            accountant.state_dict(dummy_dest)["mechanism"],
+            accountant.mechanism)
         # existing values in supplied dict unchanged
         self.assertEqual(
-            accountant.state_dict(dummy_dest)["dummy_k"], dummy_dest["dummy_k"]
-        )
+            accountant.state_dict(dummy_dest)["dummy_k"],
+            dummy_dest["dummy_k"])
 
     def test_accountant_load_state_dict(self):
         noise_multiplier = 1.5
@@ -198,7 +204,8 @@ class AccountingTest(unittest.TestCase):
 
         accountant = RDPAccountant()
         for _ in range(steps - 1000):
-            accountant.step(noise_multiplier=noise_multiplier, sample_rate=sample_rate)
+            accountant.step(noise_multiplier=noise_multiplier,
+                            sample_rate=sample_rate)
 
         new_rdp_accountant = RDPAccountant()
         new_gdp_accountant = GaussianAccountant()
@@ -212,15 +219,16 @@ class AccountingTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             new_gdp_accountant.load_state_dict(accountant.state_dict())
         # check loading logic
-        self.assertNotEqual(new_rdp_accountant.state_dict(), accountant.state_dict())
+        self.assertNotEqual(new_rdp_accountant.state_dict(),
+                            accountant.state_dict())
         new_rdp_accountant.load_state_dict(accountant.state_dict())
-        self.assertEqual(new_rdp_accountant.state_dict(), accountant.state_dict())
+        self.assertEqual(new_rdp_accountant.state_dict(),
+                         accountant.state_dict())
 
         # ensure correct output after completion
         for _ in range(steps - 1000, steps):
-            new_rdp_accountant.step(
-                noise_multiplier=noise_multiplier, sample_rate=sample_rate
-            )
+            new_rdp_accountant.step(noise_multiplier=noise_multiplier,
+                                    sample_rate=sample_rate)
 
         epsilon = new_rdp_accountant.get_epsilon(delta=1e-5)
         self.assertAlmostEqual(epsilon, 7.32911117143)

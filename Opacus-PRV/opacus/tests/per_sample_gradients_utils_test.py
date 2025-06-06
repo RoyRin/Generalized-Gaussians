@@ -29,6 +29,7 @@ from torch import nn
 
 
 class PerSampleGradientsUtilsTest(unittest.TestCase):
+
     def per_sample_grads_utils_test(
         self,
         x,
@@ -89,7 +90,7 @@ class PerSampleGradientsUtilsTest(unittest.TestCase):
             return
         out_channels = out_channels_mapper(C)
         if (
-            C % groups != 0 or out_channels % groups != 0
+                C % groups != 0 or out_channels % groups != 0
         ):  # since in_channels and out_channels must be divisible by groups
             return
 

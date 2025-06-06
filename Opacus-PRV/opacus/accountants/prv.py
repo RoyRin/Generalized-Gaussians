@@ -104,7 +104,7 @@ class PRVAccountant(IAccountant):
             tolerance=1e-60,  #sensitivity=1.0,
             N=N,
             bin_count=bin_count,
-            dimension = 1,
+            dimension=1,
             beta=None) -> float:
         """
         Return privacy budget (epsilon) expended so far.
@@ -134,8 +134,7 @@ class PRVAccountant(IAccountant):
                 N=N,
                 bin_count=bin_count,
                 tol=tolerance,
-                dimension = dimension
-                ).cdf
+                dimension=dimension).cdf
             print(f"done sampling")
 
         if delta_error is None:

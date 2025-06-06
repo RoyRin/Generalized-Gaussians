@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from typing import Dict, List
 
 import torch
@@ -42,10 +41,11 @@ def compute_layer_norm_grad_sample(
     ret = {}
     if layer.weight.requires_grad:
         ret[layer.weight] = sum_over_all_but_batch_and_last_n(
-            F.layer_norm(activations, layer.normalized_shape, eps=layer.eps)
-            * backprops,
+            F.layer_norm(activations, layer.normalized_shape, eps=layer.eps) *
+            backprops,
             layer.weight.dim(),
         )
     if layer.bias.requires_grad:
-        ret[layer.bias] = sum_over_all_but_batch_and_last_n(backprops, layer.bias.dim())
+        ret[layer.bias] = sum_over_all_but_batch_and_last_n(
+            backprops, layer.bias.dim())
     return ret

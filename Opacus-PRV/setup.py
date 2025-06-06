@@ -18,7 +18,6 @@ import sys
 
 from setuptools import find_packages, setup
 
-
 REQUIRED_MAJOR = 3
 REQUIRED_MINOR = 7
 REQUIRED_MICRO = 5
@@ -33,17 +32,15 @@ __version__ = version["__version__"]
 if sys.version_info < (REQUIRED_MAJOR, REQUIRED_MINOR, REQUIRED_MICRO):
     error = (
         "Your version of python ({major}.{minor}.{micro}) is too old. You need "
-        "python >= {required_major}.{required_minor}.{required_micro}"
-    ).format(
-        major=sys.version_info.major,
-        minor=sys.version_info.minor,
-        micro=sys.version_info.micro,
-        required_major=REQUIRED_MAJOR,
-        required_minor=REQUIRED_MINOR,
-        required_micro=REQUIRED_MICRO,
-    )
+        "python >= {required_major}.{required_minor}.{required_micro}").format(
+            major=sys.version_info.major,
+            minor=sys.version_info.minor,
+            micro=sys.version_info.micro,
+            required_major=REQUIRED_MAJOR,
+            required_minor=REQUIRED_MINOR,
+            required_micro=REQUIRED_MICRO,
+        )
     sys.exit(error)
-
 
 src_dir = os.path.abspath(os.path.dirname(__file__))
 

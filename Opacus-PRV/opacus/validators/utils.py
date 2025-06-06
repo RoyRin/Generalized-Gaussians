@@ -17,7 +17,6 @@ from typing import Sequence, Union
 
 from .module_validator import ModuleValidator
 
-
 DEFAULT_MODULE_VALIDATOR = ModuleValidator
 
 
@@ -40,11 +39,8 @@ def register_module_validator(
     """
 
     def decorator(f):
-        target_classes = (
-            target_class_or_classes
-            if isinstance(target_class_or_classes, Sequence)
-            else [target_class_or_classes]
-        )
+        target_classes = (target_class_or_classes if isinstance(
+            target_class_or_classes, Sequence) else [target_class_or_classes])
         for target_class in target_classes:
             validator_class.VALIDATORS[target_class] = f
         return f
@@ -71,11 +67,8 @@ def register_module_fixer(
     """
 
     def decorator(f):
-        target_classes = (
-            target_class_or_classes
-            if isinstance(target_class_or_classes, Sequence)
-            else [target_class_or_classes]
-        )
+        target_classes = (target_class_or_classes if isinstance(
+            target_class_or_classes, Sequence) else [target_class_or_classes])
         for target_class in target_classes:
             validator_class.FIXERS[target_class] = f
         return f

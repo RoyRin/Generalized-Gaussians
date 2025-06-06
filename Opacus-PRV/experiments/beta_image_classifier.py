@@ -47,7 +47,7 @@ def train(
         beta=None):
     model.train()
     torch.cuda.empty_cache()
-    criterion = nn.CrossEntropyLoss() # <<< 
+    criterion = nn.CrossEntropyLoss()  # <<<
     torch.cuda.empty_cache()
     losses = []
     top1_acc = []
@@ -63,7 +63,7 @@ def train(
             optimizer.zero_grad()
             #images = images.detach().cpu().numpy().cuda()
             #target = target.detach().cpu().numpy().cuda()
-            
+
             images = images.to(device)
             # target = F.one_hot(target)
             # target = target.to(torch.int64)
@@ -71,7 +71,6 @@ def train(
 
             # torch.float32
             # torch.int64
-
 
             # compute output
             output = model(images)
@@ -180,6 +179,7 @@ def __initialize_model(device, model_factory, LR=1e-2, momentum=0.9):
     privacy_engine_ = PrivacyEngine(accountant="prv")
     return model, criterion, optimizer, privacy_engine_
 
+
 def initialize_model(device, model, LR=1e-2, momentum=0.9):
     print("initialize model")
     #model = model_factory()
@@ -230,15 +230,18 @@ def intialize_model_CNN(device, LR=1e-2, momentum=0.9, **kwargs):
     model = model_factory()
     return initialize_model(device, model, LR, momentum)
 
+
 def intialize_model_adult_CNN(device, LR=1e-2, momentum=0.9, **kwargs):
     model_factory = lambda: local_models.CNN_Adult()
     model = model_factory()
     return initialize_model(device, model, LR, momentum)
 
+
 def intialize_model_LSTM(device, LR=1e-2, momentum=0.9, **kwargs):
-    model_factory = lambda: local_models.LSTMNet() # .cuda()
+    model_factory = lambda: local_models.LSTMNet()  # .cuda()
     model = model_factory()
     return initialize_model(device, model, LR, momentum)
+
 
 import scatternet_cnns
 
@@ -257,6 +260,7 @@ def initialize_model_scatternet_cnns(device,
     model = model_factory()
     return initialize_model(device, model, LR, momentum)
 
+
 def initialize_model_WRN(device, LR=1e-2, momentum=0.9, **kwargs):
     model_factory = lambda: torch.hub.load(
         'pytorch/vision:v0.10.0',
@@ -265,6 +269,7 @@ def initialize_model_WRN(device, LR=1e-2, momentum=0.9, **kwargs):
     )
     model = model_factory()
     return initialize_model(device, model, LR, momentum)
+
 
 model_name_to_initializer = {
     "resnet18": initialize_model_resnet_18,
@@ -327,8 +332,8 @@ if __name__ == "__main__":
         #"cifar-10": ["resnet18", "resnet9"], #"WRN", "scatternet_cnns", "CNN"
         #"cifar-10": ["WRN", "scatternet_cnns", "CNN"],
         #"svhn": ["WRN", "scatternet_cnns", "CNN"],
-        "cifar-10":["scatternet_cnns", "CNN"],
-        "svhn" : ["scatternet_cnns", "CNN"],
+        "cifar-10": ["scatternet_cnns", "CNN"],
+        "svhn": ["scatternet_cnns", "CNN"],
         #"svhn": ["resnet18", "resnet9", "CNN", "scatternet_cnns"], # "WRN"
         "adult": ["adult_FCN"],
         "imdb": ["LSTM"],
@@ -337,10 +342,10 @@ if __name__ == "__main__":
     }
     dataset_names = list(dataset_to_model_names.keys())
     dataset_names = ["imdb", "adult", "cifar-10", "svhn"]
-    dataset_names = ["adult"] #, "cifar-10", "svhn"]
-    dataset_names = ["cifar-10"] #, "cifar-10", "svhn"]
-    dataset_names = ["svhn"] #, "cifar-10", "svhn"]
-    dataset_names = ["cifar-10", "svhn" ] #, "cifar-10", "svhn"]
+    dataset_names = ["adult"]  #, "cifar-10", "svhn"]
+    dataset_names = ["cifar-10"]  #, "cifar-10", "svhn"]
+    dataset_names = ["svhn"]  #, "cifar-10", "svhn"]
+    dataset_names = ["cifar-10", "svhn"]  #, "cifar-10", "svhn"]
 
     dataset_names = ["cifar-10", "svhn", "adult", "imdb"]
 
@@ -348,9 +353,9 @@ if __name__ == "__main__":
 
     batch_lr_norm_delta = list(
         itertools.product(batch_sizes, LRs, MAX_GRAD_NORMS, delta_powers))
-    
+
     # dataset_names = ["imdb"]
-    
+
     model_data_names = list(itertools.product(dataset_names, model_names))
 
     for batch_size, LR, max_grad_norm, delta_power in batch_lr_norm_delta:
@@ -371,11 +376,11 @@ if __name__ == "__main__":
             elif dataset_name == "adult":
                 train_loader, test_loader = dataset_management.initialize_data_ADULT(
                     batch_size=batch_size, DATA_ROOT=DATA_ROOT)
-            
+
             elif dataset_name == "imdb":
                 train_loader, test_loader = dataset_management.initialize_data_IMDB(
                     batch_size=batch_size, DATA_ROOT=DATA_ROOT)
-                
+
             model_names = dataset_to_model_names[dataset_name]
             for model_name in model_names:
 
@@ -452,7 +457,7 @@ if __name__ == "__main__":
                             gamma=1.)  # 0.5) # every 10 steps, halve it
 
                         epochs = EPOCHS * 3 if model_name == "LSTM" else EPOCHS
-                        
+
                         for epoch in tqdm(range(epochs),
                                           desc="Epoch",
                                           unit="epoch"):

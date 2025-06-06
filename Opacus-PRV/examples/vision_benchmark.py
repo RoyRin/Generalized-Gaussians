@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Runs CIFAR10 training with differential privacy.
 """
@@ -64,13 +63,14 @@ def main():  # noqa: C901
 
     if not args.disable_dp:
         model = models.__dict__[args.architecture](
-            pretrained=False, norm_layer=(lambda c: nn.GroupNorm(args.gn_groups, c))
-        )
+            pretrained=False,
+            norm_layer=(lambda c: nn.GroupNorm(args.gn_groups, c)))
     else:
         model = models.__dict__[args.architecture](pretrained=False)
 
     model = model.to(args.device)
-    print("Model size: " + pretty_number(sum([p.numel() for p in model.parameters()])))
+    print("Model size: " +
+          pretty_number(sum([p.numel() for p in model.parameters()])))
 
     # Use the right distributed module wrapper if distributed training is enabled
     if world_size > 1:
@@ -98,24 +98,22 @@ def main():  # noqa: C901
     elif args.optim == "Adam":
         optimizer = optim.Adam(model.parameters(), lr=args.lr)
     else:
-        raise NotImplementedError("Optimizer not recognized. Please check spelling")
+        raise NotImplementedError(
+            "Optimizer not recognized. Please check spelling")
 
     privacy_engine = None
     if not args.disable_dp:
         if args.clip_per_layer:
             # Each layer has the same clipping threshold. The total grad norm is still bounded by `args.max_per_sample_grad_norm`.
-            n_layers = len(
-                [(n, p) for n, p in model.named_parameters() if p.requires_grad]
-            )
+            n_layers = len([(n, p) for n, p in model.named_parameters()
+                            if p.requires_grad])
             max_grad_norm = [
                 args.max_per_sample_grad_norm / np.sqrt(n_layers)
             ] * n_layers
         else:
             max_grad_norm = args.max_per_sample_grad_norm
 
-        privacy_engine = PrivacyEngine(
-            secure_mode=args.secure_mode,
-        )
+        privacy_engine = PrivacyEngine(secure_mode=args.secure_mode, )
         model, optimizer, train_loader = privacy_engine.make_private(
             module=model,
             optimizer=optimizer,
@@ -220,9 +218,11 @@ def parse_args():
         help="initial learning rate",
         dest="lr",
     )
-    parser.add_argument(
-        "--momentum", default=0.9, type=float, metavar="M", help="SGD momentum"
-    )
+    parser.add_argument("--momentum",
+                        default=0.9,
+                        type=float,
+                        metavar="M",
+                        help="SGD momentum")
     parser.add_argument(
         "--wd",
         "--weight-decay",
@@ -265,7 +265,8 @@ def parse_args():
         "--secure-mode",
         action="store_true",
         default=False,
-        help="Enable Secure mode to have trustworthy privacy guarantees. Comes at a performance cost",
+        help=
+        "Enable Secure mode to have trustworthy privacy guarantees. Comes at a performance cost",
     )
     parser.add_argument(
         "--delta",
@@ -289,21 +290,24 @@ def parse_args():
         help="Optimizer to use (Adam, RMSprop, SGD)",
     )
 
-    parser.add_argument(
-        "--device", type=str, default="cpu", help="Device on which to run the code."
-    )
+    parser.add_argument("--device",
+                        type=str,
+                        default="cpu",
+                        help="Device on which to run the code.")
     parser.add_argument(
         "--local_rank",
         type=int,
         default=-1,
-        help="Local rank if multi-GPU training, -1 for single GPU training. Will be overridden by the environment variables if running on a Slurm cluster.",
+        help=
+        "Local rank if multi-GPU training, -1 for single GPU training. Will be overridden by the environment variables if running on a Slurm cluster.",
     )
 
     parser.add_argument(
         "--clip_per_layer",
         action="store_true",
         default=False,
-        help="Use static per-layer clipping with the same clipping threshold for each layer. Necessary for DDP. If `False` (default), uses flat clipping.",
+        help=
+        "Use static per-layer clipping with the same clipping threshold for each layer. Necessary for DDP. If `False` (default), uses flat clipping.",
     )
 
     return parser.parse_args()

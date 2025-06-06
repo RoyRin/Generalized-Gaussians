@@ -28,7 +28,6 @@ from .optimizer import (
     _mark_as_processed,
 )
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -64,18 +63,16 @@ class AdaClipDPOptimizer(DPOptimizer):
             generator=generator,
             secure_mode=secure_mode,
         )
-        assert (
-            max_clipbound > min_clipbound
-        ), "max_clipbound must be larger than min_clipbound."
+        assert (max_clipbound > min_clipbound
+                ), "max_clipbound must be larger than min_clipbound."
         self.target_unclipped_quantile = target_unclipped_quantile
         self.clipbound_learning_rate = clipbound_learning_rate
         self.max_clipbound = max_clipbound
         self.min_clipbound = min_clipbound
         self.unclipped_num_std = unclipped_num_std
         # Theorem 1. in  https://arxiv.org/pdf/1905.03871.pdf
-        self.noise_multiplier = (
-            self.noise_multiplier ** (-2) - (2 * unclipped_num_std) ** (-2)
-        ) ** (-1 / 2)
+        self.noise_multiplier = (self.noise_multiplier**(-2) -
+                                 (2 * unclipped_num_std)**(-2))**(-1 / 2)
         self.sample_size = 0
         self.unclipped_num = 0
 
@@ -93,16 +90,14 @@ class AdaClipDPOptimizer(DPOptimizer):
             g.view(len(g), -1).norm(2, dim=-1) for g in self.grad_samples
         ]
         per_sample_norms = torch.stack(per_param_norms, dim=1).norm(2, dim=1)
-        per_sample_clip_factor = (self.max_grad_norm / (per_sample_norms + 1e-6)).clamp(
-            max=1.0
-        )
+        per_sample_clip_factor = (self.max_grad_norm /
+                                  (per_sample_norms + 1e-6)).clamp(max=1.0)
 
         # the two lines below are the only changes
         # relative to the parent DPOptimizer class.
         self.sample_size += len(per_sample_clip_factor)
-        self.unclipped_num += (
-            len(per_sample_clip_factor) - (per_sample_clip_factor < 1).sum()
-        )
+        self.unclipped_num += (len(per_sample_clip_factor) -
+                               (per_sample_clip_factor < 1).sum())
 
         for p in self.params:
             _check_processed_flag(p.grad_sample)
@@ -134,17 +129,16 @@ class AdaClipDPOptimizer(DPOptimizer):
         """
         unclipped_frac = self.unclipped_num / self.sample_size
         self.max_grad_norm *= torch.exp(
-            -self.clipbound_learning_rate
-            * (unclipped_frac - self.target_unclipped_quantile)
-        )
+            -self.clipbound_learning_rate *
+            (unclipped_frac - self.target_unclipped_quantile))
         if self.max_grad_norm > self.max_clipbound:
             self.max_grad_norm = self.max_clipbound
         elif self.max_grad_norm < self.min_clipbound:
             self.max_grad_norm = self.min_clipbound
 
     def pre_step(
-        self, closure: Optional[Callable[[], float]] = None
-    ) -> Optional[float]:
+            self,
+            closure: Optional[Callable[[], float]] = None) -> Optional[float]:
         pre_step_full = super().pre_step()
         if pre_step_full:
             self.update_max_grad_norm()

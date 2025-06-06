@@ -19,7 +19,6 @@ from abc import ABC, abstractmethod
 import torch.nn as nn
 from opacus.utils.module_utils import trainable_parameters
 
-
 logger = logging.getLogger(__name__)
 
 OPACUS_PARAM_MONKEYPATCH_ATTRS = ["_forward_counter", "_current_grad_sample"]
@@ -94,11 +93,9 @@ class AbstractGradSampleModule(nn.Module, ABC):
             affects regular gradients. Per sample gradients are always set to None)
         """
         if set_to_none is False:
-            logger.debug(
-                "Despite set_to_none is set to False, "
-                "opacus will set p.grad_sample to None due to "
-                "non-trivial gradient accumulation behaviour"
-            )
+            logger.debug("Despite set_to_none is set to False, "
+                         "opacus will set p.grad_sample to None due to "
+                         "non-trivial gradient accumulation behaviour")
         self.set_grad_sample_to_none()
         super().zero_grad(set_to_none)
 

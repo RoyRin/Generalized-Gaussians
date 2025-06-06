@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Runs DCGAN training with differential privacy.
 
@@ -33,37 +32,54 @@ import torchvision.utils as vutils
 from opacus import PrivacyEngine
 from tqdm import tqdm
 
-
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--data-root", required=True, help="path to dataset")
-parser.add_argument(
-    "--workers", type=int, help="number of data loading workers", default=2
-)
-parser.add_argument("--batch-size", type=int, default=64, help="input batch size")
+parser.add_argument("--workers",
+                    type=int,
+                    help="number of data loading workers",
+                    default=2)
+parser.add_argument("--batch-size",
+                    type=int,
+                    default=64,
+                    help="input batch size")
 parser.add_argument(
     "--imageSize",
     type=int,
     default=64,
     help="the height / width of the input image to network",
 )
-parser.add_argument("--nz", type=int, default=100, help="size of the latent z vector")
+parser.add_argument("--nz",
+                    type=int,
+                    default=100,
+                    help="size of the latent z vector")
 parser.add_argument("--ngf", type=int, default=128)
 parser.add_argument("--ndf", type=int, default=128)
-parser.add_argument(
-    "--epochs", type=int, default=25, help="number of epochs to train for"
-)
-parser.add_argument(
-    "--lr", type=float, default=0.0002, help="learning rate, default=0.0002"
-)
-parser.add_argument(
-    "--beta1", type=float, default=0.5, help="beta1 for adam. default=0.5"
-)
-parser.add_argument("--ngpu", type=int, default=1, help="number of GPUs to use")
-parser.add_argument("--netG", default="", help="path to netG (to continue training)")
-parser.add_argument("--netD", default="", help="path to netD (to continue training)")
-parser.add_argument(
-    "--outf", default=".", help="folder to output images and model checkpoints"
-)
+parser.add_argument("--epochs",
+                    type=int,
+                    default=25,
+                    help="number of epochs to train for")
+parser.add_argument("--lr",
+                    type=float,
+                    default=0.0002,
+                    help="learning rate, default=0.0002")
+parser.add_argument("--beta1",
+                    type=float,
+                    default=0.5,
+                    help="beta1 for adam. default=0.5")
+parser.add_argument("--ngpu",
+                    type=int,
+                    default=1,
+                    help="number of GPUs to use")
+parser.add_argument("--netG",
+                    default="",
+                    help="path to netG (to continue training)")
+parser.add_argument("--netD",
+                    default="",
+                    help="path to netD (to continue training)")
+parser.add_argument("--outf",
+                    default=".",
+                    help="folder to output images and model checkpoints")
 parser.add_argument("--manualSeed", type=int, help="manual seed")
 parser.add_argument(
     "--target-digit",
@@ -87,7 +103,8 @@ parser.add_argument(
     "--secure-rng",
     action="store_true",
     default=False,
-    help="Enable Secure RNG to have trustworthy privacy guarantees. Comes at a performance cost",
+    help=
+    "Enable Secure RNG to have trustworthy privacy guarantees. Comes at a performance cost",
 )
 parser.add_argument(
     "-r",
@@ -135,18 +152,15 @@ torch.manual_seed(opt.manualSeed)
 
 cudnn.benchmark = True
 
-
 try:
     dataset = dset.MNIST(
         root=opt.data_root,
         download=True,
-        transform=transforms.Compose(
-            [
-                transforms.Resize(opt.imageSize),
-                transforms.ToTensor(),
-                transforms.Normalize((0.5,), (0.5,)),
-            ]
-        ),
+        transform=transforms.Compose([
+            transforms.Resize(opt.imageSize),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, ), (0.5, )),
+        ]),
     )
     idx = dataset.targets == opt.target_digit
     dataset.targets = dataset.targets[idx]
@@ -179,6 +193,7 @@ def weights_init(m):
 
 
 class Generator(nn.Module):
+
     def __init__(self, ngpu):
         super(Generator, self).__init__()
         self.ngpu = ngpu
@@ -207,7 +222,8 @@ class Generator(nn.Module):
 
     def forward(self, input):
         if input.is_cuda and self.ngpu > 1:
-            output = nn.parallel.data_parallel(self.main, input, range(self.ngpu))
+            output = nn.parallel.data_parallel(self.main, input,
+                                               range(self.ngpu))
         else:
             output = self.main(input)
         return output
@@ -221,6 +237,7 @@ if opt.netG != "":
 
 
 class Discriminator(nn.Module):
+
     def __init__(self, ngpu):
         super(Discriminator, self).__init__()
         self.ngpu = ngpu
@@ -247,7 +264,8 @@ class Discriminator(nn.Module):
 
     def forward(self, input):
         if input.is_cuda and self.ngpu > 1:
-            output = nn.parallel.data_parallel(self.main, input, range(self.ngpu))
+            output = nn.parallel.data_parallel(self.main, input,
+                                               range(self.ngpu))
         else:
             output = self.main(input)
 
@@ -282,7 +300,6 @@ if not opt.disable_dp:
 
 optimizerG = optim.Adam(netG.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
 
-
 for epoch in range(opt.epochs):
     data_bar = tqdm(dataloader)
     for i, data in enumerate(data_bar, 0):
@@ -296,7 +313,7 @@ for epoch in range(opt.epochs):
         batch_size = real_data.size(0)
 
         # train with real
-        label_true = torch.full((batch_size,), REAL_LABEL, device=device)
+        label_true = torch.full((batch_size, ), REAL_LABEL, device=device)
         output = netD(real_data)
         errD_real = criterion(output, label_true)
         D_x = output.mean().item()
@@ -304,7 +321,7 @@ for epoch in range(opt.epochs):
         # train with fake
         noise = torch.randn(batch_size, nz, 1, 1, device=device)
         fake = netG(noise)
-        label_fake = torch.full((batch_size,), FAKE_LABEL, device=device)
+        label_fake = torch.full((batch_size, ), FAKE_LABEL, device=device)
         output = netD(fake.detach())
         errD_fake = criterion(output, label_fake)
 
@@ -325,7 +342,7 @@ for epoch in range(opt.epochs):
         ###########################
         optimizerG.zero_grad()
 
-        label_g = torch.full((batch_size,), REAL_LABEL, device=device)
+        label_g = torch.full((batch_size, ), REAL_LABEL, device=device)
         output_g = netD(fake)
         errG = criterion(output_g, label_g)
         errG.backward()
@@ -334,23 +351,20 @@ for epoch in range(opt.epochs):
 
         if not opt.disable_dp:
             epsilon = privacy_engine.accountant.get_epsilon(delta=opt.delta)
-            data_bar.set_description(
-                f"epoch: {epoch}, Loss_D: {errD.item()} "
-                f"Loss_G: {errG.item()} D(x): {D_x} "
-                f"D(G(z)): {D_G_z1}/{D_G_z2}"
-                "(ε = %.2f, δ = %.2f)" % (epsilon, opt.delta)
-            )
+            data_bar.set_description(f"epoch: {epoch}, Loss_D: {errD.item()} "
+                                     f"Loss_G: {errG.item()} D(x): {D_x} "
+                                     f"D(G(z)): {D_G_z1}/{D_G_z2}"
+                                     "(ε = %.2f, δ = %.2f)" %
+                                     (epsilon, opt.delta))
         else:
-            data_bar.set_description(
-                f"epoch: {epoch}, Loss_D: {errD.item()} "
-                f"Loss_G: {errG.item()} D(x): {D_x} "
-                f"D(G(z)): {D_G_z1}/{D_G_z2}"
-            )
+            data_bar.set_description(f"epoch: {epoch}, Loss_D: {errD.item()} "
+                                     f"Loss_G: {errG.item()} D(x): {D_x} "
+                                     f"D(G(z)): {D_G_z1}/{D_G_z2}")
 
         if i % 100 == 0:
-            vutils.save_image(
-                real_data, "%s/real_samples.png" % opt.outf, normalize=True
-            )
+            vutils.save_image(real_data,
+                              "%s/real_samples.png" % opt.outf,
+                              normalize=True)
             fake = netG(FIXED_NOISE)
             vutils.save_image(
                 fake.detach(),

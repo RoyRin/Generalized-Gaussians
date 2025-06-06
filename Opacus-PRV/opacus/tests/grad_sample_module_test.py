@@ -30,6 +30,7 @@ from torchvision.models import mobilenet_v3_small
 
 
 class SampleConvNet(nn.Module):
+
     def __init__(self):
         super().__init__()
         self.conv1 = nn.Conv2d(3, 16, 8, 2, padding=3)
@@ -59,12 +60,11 @@ class GradSampleModuleTest(unittest.TestCase):
         self.original_model = SampleConvNet()
         copy_of_original_model = SampleConvNet()
         copy_of_original_model.load_state_dict(
-            self.original_model.state_dict(), strict=True
-        )
+            self.original_model.state_dict(), strict=True)
 
-        self.grad_sample_module = self.CLS(
-            copy_of_original_model, batch_first=True, loss_reduction="mean"
-        )
+        self.grad_sample_module = self.CLS(copy_of_original_model,
+                                           batch_first=True,
+                                           loss_reduction="mean")
         self.DATA_SIZE = 8
         self.setUp_data()
         self.criterion = nn.L1Loss()
@@ -74,14 +74,11 @@ class GradSampleModuleTest(unittest.TestCase):
             size=self.DATA_SIZE,
             image_size=(3, 28, 28),
             num_classes=10,
-            transform=transforms.Compose(
-                [
-                    transforms.ToTensor(),
-                    transforms.Normalize(
-                        mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-                    ),
-                ]
-            ),
+            transform=transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                     std=[0.229, 0.224, 0.225]),
+            ]),
         )
         self.dl = DataLoader(self.ds, batch_size=self.DATA_SIZE)
 
@@ -114,14 +111,12 @@ class GradSampleModuleTest(unittest.TestCase):
 
         self.grad_sample_module.zero_grad()
         params_with_gs = [
-            n
-            for n, p in self.grad_sample_module.named_parameters()
+            n for n, p in self.grad_sample_module.named_parameters()
             if p.grad_sample is not None
         ]
         msg = (
             "After calling .zero_grad() on the GradSampleModule, the following parameters still "
-            f"have a grad_sample: {params_with_gs}"
-        )
+            f"have a grad_sample: {params_with_gs}")
         assert len(params_with_gs) == 0, msg
 
     def test_to_standard_module(self):
@@ -130,9 +125,9 @@ class GradSampleModuleTest(unittest.TestCase):
             self.original_model.state_dict(),
             strict=True,
         )
-        new_grad_sample_module = GradSampleModule(
-            copy_of_original_model, batch_first=True, loss_reduction="mean"
-        )
+        new_grad_sample_module = GradSampleModule(copy_of_original_model,
+                                                  batch_first=True,
+                                                  loss_reduction="mean")
 
         new_grad_sample_module = new_grad_sample_module.to_standard_module()
 
@@ -157,7 +152,11 @@ class GradSampleModuleTest(unittest.TestCase):
                 f"L1 Loss = {F.l1_loss(gs_tensor, original_tensor)}",
             )
 
-            assert_close(gs_tensor, original_tensor, atol=1e-6, rtol=1e-4, msg=msg)
+            assert_close(gs_tensor,
+                         original_tensor,
+                         atol=1e-6,
+                         rtol=1e-4,
+                         msg=msg)
 
     def test_remove_hooks(self):
         """
@@ -168,9 +167,9 @@ class GradSampleModuleTest(unittest.TestCase):
             self.original_model.state_dict(),
             strict=True,
         )
-        new_grad_sample_module = GradSampleModule(
-            copy_of_original_model, batch_first=True, loss_reduction="mean"
-        )
+        new_grad_sample_module = GradSampleModule(copy_of_original_model,
+                                                  batch_first=True,
+                                                  loss_reduction="mean")
         new_grad_sample_module.remove_hooks()
 
         remaining_forward_hooks = {
@@ -200,7 +199,9 @@ class GradSampleModuleTest(unittest.TestCase):
         assert not self.grad_sample_module.hooks_enabled
 
     def test_standard_module_validation(self):
+
         class SimpleLinear(nn.Module):
+
             def __init__(self, in_f, out_f):
                 super().__init__()
                 self.p = nn.Parameter(torch.Tensor(in_f, out_f))
@@ -246,16 +247,15 @@ class GradSampleModuleTest(unittest.TestCase):
 
     def test_load_state_dict(self):
         gs_state_dict = self.grad_sample_module.state_dict()
-        new_gs = GradSampleModule(
-            SampleConvNet(), batch_first=False, loss_reduction="mean"
-        )
+        new_gs = GradSampleModule(SampleConvNet(),
+                                  batch_first=False,
+                                  loss_reduction="mean")
         new_gs.load_state_dict(gs_state_dict)
         # wrapped module is the same
         for key in self.original_model.state_dict().keys():
             self.assertTrue(key in new_gs._module.state_dict())
-            assert_close(
-                self.original_model.state_dict()[key], new_gs._module.state_dict()[key]
-            )
+            assert_close(self.original_model.state_dict()[key],
+                         new_gs._module.state_dict()[key])
 
 
 class EWGradSampleModuleTest(GradSampleModuleTest):

@@ -23,8 +23,8 @@ from .utils import register_grad_sampler
 
 @register_grad_sampler(nn.Embedding)
 def compute_embedding_grad_sample(
-    layer: nn.Embedding, activations: torch.Tensor, backprops: torch.Tensor
-) -> Dict[nn.Parameter, torch.Tensor]:
+        layer: nn.Embedding, activations: torch.Tensor,
+        backprops: torch.Tensor) -> Dict[nn.Parameter, torch.Tensor]:
     """
     Computes per sample gradients for ``nn.Embedding`` layer.
 
@@ -44,22 +44,20 @@ def compute_embedding_grad_sample(
             ret[layer.weight] = torch.zeros_like(layer.weight).unsqueeze(0)
             return ret
 
-        index = (
-            activations.unsqueeze(-1)
-            .expand(*activations.shape, layer.embedding_dim)
-            .reshape(batch_size, -1, layer.embedding_dim)
-        )
+        index = (activations.unsqueeze(-1).expand(*activations.shape,
+                                                  layer.embedding_dim).reshape(
+                                                      batch_size, -1,
+                                                      layer.embedding_dim))
         #
         ## HACK by Roy! < makes it work for DP!
         #
         index = index.type(torch.int64)
 
-        grad_sample = torch.zeros(
-            batch_size, *layer.weight.shape, device=layer.weight.device
-        )
+        grad_sample = torch.zeros(batch_size,
+                                  *layer.weight.shape,
+                                  device=layer.weight.device)
         grad_sample.scatter_add_(
-            1, index, backprops.reshape(batch_size, -1, layer.embedding_dim)
-        )
+            1, index, backprops.reshape(batch_size, -1, layer.embedding_dim))
         torch.backends.cudnn.deterministic = saved
         ret[layer.weight] = grad_sample
     return ret

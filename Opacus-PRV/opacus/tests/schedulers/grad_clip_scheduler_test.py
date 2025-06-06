@@ -23,6 +23,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 
 class GradClipSchedulerTest(unittest.TestCase):
+
     def setUp(self):
         n_data, dim = 100, 10
         data = torch.randn(n_data, dim)
@@ -50,7 +51,9 @@ class GradClipSchedulerTest(unittest.TestCase):
     def test_step_scheduler(self):
         gamma = 0.1
         step_size = 2
-        scheduler = StepGradClip(self.optimizer, step_size=step_size, gamma=gamma)
+        scheduler = StepGradClip(self.optimizer,
+                                 step_size=step_size,
+                                 gamma=gamma)
 
         self.assertEqual(self.optimizer.max_grad_norm, 1.0)
         scheduler.step()
@@ -63,12 +66,12 @@ class GradClipSchedulerTest(unittest.TestCase):
         self.assertEqual(self.optimizer.max_grad_norm, gamma**2)
 
     def test_lambda_scheduler(self):
+
         def scheduler_function(epoch):
             return 1 - epoch / 10
 
-        scheduler = LambdaGradClip(
-            self.optimizer, scheduler_function=scheduler_function
-        )
+        scheduler = LambdaGradClip(self.optimizer,
+                                   scheduler_function=scheduler_function)
 
         self.assertEqual(self.optimizer.max_grad_norm, 1.0)
         scheduler.step()

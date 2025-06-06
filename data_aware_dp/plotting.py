@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 from data_aware_dp import rdp, beta_exponential
 
 
-def plot_rdp_scaling(betas = None, x_range=[-4, 4], y_max = 25):
+def plot_rdp_scaling(betas=None, x_range=[-4, 4], y_max=25):
     x = np.linspace(x_range[0], x_range[1], 1000)
     if betas is None:
-        beta_range=[.1, 4]
+        beta_range = [.1, 4]
         betas = np.arange(beta_range[0], beta_range[1], .4)
     verbose = False
 

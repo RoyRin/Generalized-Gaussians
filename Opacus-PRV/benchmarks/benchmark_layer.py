@@ -64,9 +64,8 @@ def run_layer_benchmark(
 
     # move layer to device and get memory statistics
     memory_stats = layer_fun.to(device=device)
-    invalid_mem_flag |= not (
-        sum(v for _, v in memory_stats.items()) == torch.cuda.memory_allocated(device)
-    )
+    invalid_mem_flag |= not (sum(v for _, v in memory_stats.items())
+                             == torch.cuda.memory_allocated(device))
 
     # benchmark.Timer performs its own warmups
     timer = benchmark.Timer(
@@ -111,7 +110,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "layer",
         type=str,
-        choices=[v for k, v in LayerType.__dict__.items() if not k.startswith("__")],
+        choices=[
+            v for k, v in LayerType.__dict__.items() if not k.startswith("__")
+        ],
     )
     parser.add_argument("--batch_size", default=64, type=int)
     parser.add_argument(
@@ -120,9 +121,9 @@ if __name__ == "__main__":
         type=int,
         help="number of forward/backward passes to run",
     )
-    parser.add_argument(
-        "--forward_only", action="store_true", help="only run forward passes"
-    )
+    parser.add_argument("--forward_only",
+                        action="store_true",
+                        help="only run forward passes")
     parser.add_argument("--random_seed", default=0, type=int)
     parser.add_argument(
         "-c",
@@ -136,7 +137,8 @@ if __name__ == "__main__":
         type=str,
         choices=["baseline", "hooks", "ew", "functorch"],
         default="baseline",
-        help="Mode to compute per sample gradinets: Non-private(baseline), Classic (hooks), Functorch(functorch), ExpandedWeights(ew)",
+        help=
+        "Mode to compute per sample gradinets: Non-private(baseline), Classic (hooks), Functorch(functorch), ExpandedWeights(ew)",
     )
     args = parser.parse_args()
     main(args)

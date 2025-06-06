@@ -43,7 +43,8 @@ class DPPerLayerOptimizer(DPOptimizer):
     ):
         assert len(max_grad_norm) == len(params(optimizer))
         self.max_grad_norms = max_grad_norm
-        max_grad_norm = torch.norm(torch.Tensor(self.max_grad_norms), p=2).item()
+        max_grad_norm = torch.norm(torch.Tensor(self.max_grad_norms),
+                                   p=2).item()
         super().__init__(
             optimizer,
             noise_multiplier=noise_multiplier,
@@ -59,12 +60,12 @@ class DPPerLayerOptimizer(DPOptimizer):
             _check_processed_flag(p.grad_sample)
 
             grad_sample = self._get_flat_grad_sample(p)
-            per_sample_norms = grad_sample.norm(
-                2, dim=tuple(range(1, grad_sample.ndim))
-            )
-            per_sample_clip_factor = (max_grad_norm / (per_sample_norms + 1e-6)).clamp(
-                max=1.0
-            )
+            per_sample_norms = grad_sample.norm(2,
+                                                dim=tuple(
+                                                    range(1,
+                                                          grad_sample.ndim)))
+            per_sample_clip_factor = (max_grad_norm /
+                                      (per_sample_norms + 1e-6)).clamp(max=1.0)
             grad = contract("i,i...", per_sample_clip_factor, grad_sample)
 
             if p.summed_grad is not None:

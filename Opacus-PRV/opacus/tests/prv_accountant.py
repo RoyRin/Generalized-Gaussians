@@ -17,7 +17,6 @@ import unittest
 
 from opacus.accountants import PRVAccountant
 
-
 # Computed from https://github.com/microsoft/prv_accountant
 msr_values = {
     (0.8, 0.001, 100): 0.270403364058018680360362395731,
@@ -64,6 +63,7 @@ msr_values = {
 
 
 class PRVAccountantTest(unittest.TestCase):
+
     def test_values(self):
         for (sigma, q, steps), expected_epsilon in msr_values.items():
             accountant = PRVAccountant()

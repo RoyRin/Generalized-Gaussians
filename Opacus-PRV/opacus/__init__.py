@@ -18,7 +18,6 @@ from .grad_sample import GradSampleModule
 from .privacy_engine import PrivacyEngine
 from .version import __version__
 
-
 __all__ = [
     "PrivacyEngine",
     "GradSampleModule",

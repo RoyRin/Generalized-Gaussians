@@ -16,7 +16,6 @@ import argparse
 
 from benchmarks.utils import generate_report
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(

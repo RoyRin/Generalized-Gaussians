@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Runs MNIST training with differential privacy.
 This example demonstrates how to use Opacus with PyTorch Lightning.
@@ -41,11 +40,11 @@ from opacus.lightning import DPLightningDataModule
 from pl_bolts.datamodules import MNISTDataModule
 from pytorch_lightning.utilities.cli import LightningCLI
 
-
 warnings.filterwarnings("ignore")
 
 
 class LitSampleConvNetClassifier(pl.LightningModule):
+
     def __init__(
         self,
         lr: float = 0.1,
@@ -102,8 +101,8 @@ class LitSampleConvNetClassifier(pl.LightningModule):
             data_loader = (
                 # soon there will be a fancy way to access train dataloader,
                 # see https://github.com/PyTorchLightning/pytorch-lightning/issues/10430
-                self.trainer._data_connector._train_dataloader_source.dataloader()
-            )
+                self.trainer._data_connector._train_dataloader_source.
+                dataloader())
 
             # transform (model, optimizer, dataloader) to DP-versions
             if hasattr(self, "dp"):
@@ -124,7 +123,11 @@ class LitSampleConvNetClassifier(pl.LightningModule):
         data, target = batch
         output = self(data)
         loss = F.cross_entropy(output, target)
-        self.log("train_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("train_loss",
+                 loss,
+                 on_step=False,
+                 on_epoch=True,
+                 prog_bar=True)
         return loss
 
     def test_step(self, batch, batch_idx):
@@ -132,8 +135,15 @@ class LitSampleConvNetClassifier(pl.LightningModule):
         output = self(data)
         loss = F.cross_entropy(output, target)
         self.test_accuracy(output, target)
-        self.log("test_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
-        self.log("test_accuracy", self.test_accuracy, on_step=False, on_epoch=True)
+        self.log("test_loss",
+                 loss,
+                 on_step=False,
+                 on_epoch=True,
+                 prog_bar=True)
+        self.log("test_accuracy",
+                 self.test_accuracy,
+                 on_step=False,
+                 on_epoch=True)
         return loss
 
     def on_train_epoch_end(self):
@@ -173,7 +183,8 @@ def cli_main():
             "max_epochs": 10,
             "enable_model_summary": False,
         },
-        description="Training MNIST classifier with Opacus and PyTorch Lightning",
+        description=
+        "Training MNIST classifier with Opacus and PyTorch Lightning",
     )
     cli.trainer.fit(cli.model, datamodule=cli.datamodule)
     cli.trainer.test(ckpt_path="best", datamodule=cli.datamodule)

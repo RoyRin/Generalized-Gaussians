@@ -28,6 +28,7 @@ from .common import GradSampleHooks_test, expander, shrinker
 
 
 class Conv2d_test(GradSampleHooks_test):
+
     @given(
         N=st.integers(0, 4),
         C=st.sampled_from([1, 3, 32]),
@@ -58,7 +59,7 @@ class Conv2d_test(GradSampleHooks_test):
             return
         out_channels = out_channels_mapper(C)
         if (
-            C % groups != 0 or out_channels % groups != 0
+                C % groups != 0 or out_channels % groups != 0
         ):  # since in_channels and out_channels must be divisible by groups
             return
 
@@ -72,9 +73,8 @@ class Conv2d_test(GradSampleHooks_test):
             dilation=dilation,
             groups=groups,
         )
-        is_ew_compatible = (
-            padding != "same" and N > 0
-        )  # TODO add support for padding = 'same' with EW
+        is_ew_compatible = (padding != "same" and N > 0
+                            )  # TODO add support for padding = 'same' with EW
 
         # Test regular GSM
         self.run_test(
@@ -91,8 +91,7 @@ class Conv2d_test(GradSampleHooks_test):
             # 'convolution as a backward' doesn't support padding=same
             conv2d_gsm = GradSampleModule.GRAD_SAMPLERS[nn.Conv2d]
             GradSampleModule.GRAD_SAMPLERS[
-                nn.Conv2d
-            ] = convolution2d_backward_as_a_convolution
+                nn.Conv2d] = convolution2d_backward_as_a_convolution
             self.run_test(
                 x,
                 conv,
@@ -157,9 +156,12 @@ class Conv2d_test(GradSampleHooks_test):
         This test is mainly for particular use cases and can be useful for future debugging
         """
         x = torch.randn(1, 1, 8, 1)
-        layer = nn.Conv2d(
-            1, 1, kernel_size=(3, 1), groups=1, dilation=(3, 1), bias=None
-        )
+        layer = nn.Conv2d(1,
+                          1,
+                          kernel_size=(3, 1),
+                          groups=1,
+                          dilation=(3, 1),
+                          bias=None)
 
         m = GradSampleModule(layer)
 
@@ -168,5 +170,5 @@ class Conv2d_test(GradSampleHooks_test):
         y.backward(backprops)
 
         self.assertLess(
-            torch.norm(m._module.weight.grad_sample[0] - m._module.weight.grad), 1e-7
-        )
+            torch.norm(m._module.weight.grad_sample[0] -
+                       m._module.weight.grad), 1e-7)

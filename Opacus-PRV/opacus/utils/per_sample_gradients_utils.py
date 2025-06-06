@@ -137,8 +137,8 @@ def compute_microbatch_grad_sample(
         if type(x_i) is not tuple:
             # EmbeddingBag provides tuples
             x_i = x_i.unsqueeze(
-                0 if batch_first else 1
-            )  # x_i of size [1, T, ...] if batch_first, else [T, 1, ...]
+                0 if batch_first else
+                1)  # x_i of size [1, T, ...] if batch_first, else [T, 1, ...]
         loss_i = module(x_i)
         loss_i.backward()
         for p in module.parameters():
@@ -147,11 +147,13 @@ def compute_microbatch_grad_sample(
     for _, p in trainable_parameters(module):
         if batch_first:
             p.microbatch_grad_sample = torch.stack(
-                p.microbatch_grad_sample, dim=0  # [B, T, ...]
+                p.microbatch_grad_sample,
+                dim=0  # [B, T, ...]
             )
         else:
             p.microbatch_grad_sample = torch.stack(
-                p.microbatch_grad_sample, dim=1  # [T, B, ...]
+                p.microbatch_grad_sample,
+                dim=1  # [T, B, ...]
             ).transpose(
                 0, 1
             )  # Opacus's semantics is that grad_samples are ALWAYS batch_first: [B, T, ...]
@@ -202,7 +204,8 @@ def compute_opacus_grad_sample(
 
     opacus_grad_samples = {
         name: p.grad_sample
-        for name, p in trainable_parameters(grad_sample_module.wrapped_module._module)
+        for name, p in trainable_parameters(
+            grad_sample_module.wrapped_module._module)
     }
 
     return opacus_grad_samples
@@ -259,17 +262,18 @@ def check_per_sample_gradients_are_correct(
         if not batch_first:
             raise RuntimeError("Batch should be first dimension.")
         if not check_torch_version_for_ew_sample():
-            raise RuntimeError(f"Unsupported torch version: {torch.__version__}.")
+            raise RuntimeError(
+                f"Unsupported torch version: {torch.__version__}.")
 
     for loss_reduction in reductions:
         if not _check_per_sample_gradients_are_correct_with_reduction(
-            x,
-            module,
-            batch_first=batch_first,
-            loss_reduction=loss_reduction,
-            atol=atol,
-            rtol=rtol,
-            grad_sample_mode=grad_sample_mode,
+                x,
+                module,
+                batch_first=batch_first,
+                loss_reduction=loss_reduction,
+                atol=atol,
+                rtol=rtol,
+                grad_sample_mode=grad_sample_mode,
         ):
             return False
 
@@ -292,8 +296,7 @@ def compute_microbatch_grad_sample_tensor_or_seq(
         )
     else:
         microbatch_grad_samples = compute_microbatch_grad_sample(
-            x, module, batch_first=batch_first, loss_reduction=loss_reduction
-        )
+            x, module, batch_first=batch_first, loss_reduction=loss_reduction)
 
     return microbatch_grad_samples
 
@@ -368,7 +371,8 @@ def _check_per_sample_gradients_are_correct_with_reduction(
         microbatch_grad_sample = microbatch_grad_samples[name]
         if not opacus_grad_sample.shape == microbatch_grad_sample.shape:
             return False
-        if not torch.allclose(microbatch_grad_sample, opacus_grad_sample, atol, rtol):
+        if not torch.allclose(microbatch_grad_sample, opacus_grad_sample, atol,
+                              rtol):
             return False
     return True
 
@@ -398,9 +402,8 @@ def unpack_packedsequences(X: PackedSequence) -> List[torch.Tensor]:
     return unpacked_data
 
 
-def _compute_loss_packedsequences(
-    criterion: nn.L1Loss, x: PackedSequence
-) -> torch.Tensor:
+def _compute_loss_packedsequences(criterion: nn.L1Loss,
+                                  x: PackedSequence) -> torch.Tensor:
     r"""
     This function computes the loss in a different way for 'mean' reduced L1 loss while for 'sum' reduced L1 loss,
     it computes the same way as with non-packed data. For 'mean' reduced L1 loss, it transforms x (PackedSequence)

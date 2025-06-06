@@ -49,7 +49,11 @@ def _gsm_modes() -> Set[str]:
 PARAMETERS = [
     (
         [("linear", nn.Linear, [])],
-        {"input_shape": [], "in_features": 512, "out_features": 512},
+        {
+            "input_shape": [],
+            "in_features": 512,
+            "out_features": 512
+        },
     ),
     (
         [("conv", nn.Conv2d, [])],
@@ -62,15 +66,26 @@ PARAMETERS = [
     ),
     (
         [("layernorm", nn.LayerNorm, [])],
-        {"input_shape": [64], "D": 1},
+        {
+            "input_shape": [64],
+            "D": 1
+        },
     ),
     (
         [("instancenorm", nn.InstanceNorm1d, [])],
-        {"num_features": 256, "input_shape": [64], "affine": True},
+        {
+            "num_features": 256,
+            "input_shape": [64],
+            "affine": True
+        },
     ),
     (
         [("groupnorm", nn.GroupNorm, [])],
-        {"input_shape": [], "num_groups": 16, "num_channels": 256},
+        {
+            "input_shape": [],
+            "num_groups": 16,
+            "num_channels": 256
+        },
     ),
     (
         [("embedding", nn.Embedding, [])],
@@ -103,15 +118,18 @@ PARAMETERS = [
             ("lstm", nn.LSTM, ["hooks", "ew"]),
             ("dplstm", DPLSTM, ["hooks"]),
         ],
-        {"seq_len": 128, "input_size": 100, "hidden_size": 100},
+        {
+            "seq_len": 128,
+            "input_size": 100,
+            "hidden_size": 100
+        },
     ),
 ]
 
 
 @pytest.mark.parametrize("layer_list, layer_config", PARAMETERS)
-def test_layer_modules(
-    layer_list: List[Tuple[str, Type[nn.Module]]], layer_config: Dict[str, Any]
-) -> None:
+def test_layer_modules(layer_list: List[Tuple[str, Type[nn.Module]]],
+                       layer_config: Dict[str, Any]) -> None:
     """For each supported layer, tests that it is instantiated with the correct module
     and DP support.
 
@@ -141,14 +159,14 @@ def test_layer_modules(
                 assert isinstance(layer.module, GradSampleModule)
                 assert layer.module.force_functorch
             elif gsm_mode == "ew":
-                assert isinstance(layer.module, GradSampleModuleExpandedWeights)
+                assert isinstance(layer.module,
+                                  GradSampleModuleExpandedWeights)
 
 
 @skipifnocuda
 @pytest.mark.parametrize("layer_list, layer_config", PARAMETERS)
-def test_to_device(
-    layer_list: List[Tuple[str, nn.Module]], layer_config: Dict[str, Any]
-) -> None:
+def test_to_device(layer_list: List[Tuple[str, nn.Module]],
+                   layer_config: Dict[str, Any]) -> None:
     """Tests that inputs, labels, and module are initialized on CPU, and that moving
     them to GPU and CPU works correctly.
 
@@ -188,9 +206,8 @@ def test_to_device(
 
 
 @pytest.mark.parametrize("layer_list, layer_config", PARAMETERS)
-def test_layer_outputs(
-    layer_list: List[Tuple[str, nn.Module]], layer_config: Dict[str, Any]
-) -> None:
+def test_layer_outputs(layer_list: List[Tuple[str, nn.Module]],
+                       layer_config: Dict[str, Any]) -> None:
     """Layers in layer_list that share the same underlying module (either a
     torch.nn.Module or opacus.layers.DPModule) should produce the same output
     given the same random seed and different outputs given different random seeds.
@@ -223,21 +240,18 @@ def test_layer_outputs(
                     outputs[random_seed][str(module)] = layer.forward_only()
 
                 # same module with same seed should result in same output
-                assert torch.equal(
-                    outputs[random_seed][str(module)], layer.forward_only()
-                )
+                assert torch.equal(outputs[random_seed][str(module)],
+                                   layer.forward_only())
 
         # same module with different seed should result in different output
         for module_name in outputs[random_seed_a]:
-            assert not torch.equal(
-                outputs[random_seed_a][module_name], outputs[random_seed_b][module_name]
-            )
+            assert not torch.equal(outputs[random_seed_a][module_name],
+                                   outputs[random_seed_b][module_name])
 
 
 @pytest.mark.parametrize("layer_list, layer_config", PARAMETERS)
-def test_forward_backward(
-    layer_list: List[Tuple[str, nn.Module]], layer_config: Dict[str, Any]
-) -> None:
+def test_forward_backward(layer_list: List[Tuple[str, nn.Module]],
+                          layer_config: Dict[str, Any]) -> None:
     """Tests that Layer.forward_backward() runs for each layer in layer_list and that
     the Layer is not modified.
 
@@ -257,7 +271,6 @@ def test_forward_backward(
                 continue
             layer_copy = copy.deepcopy(layer)
             layer.forward_backward()
-            for p1, p2 in zip(
-                layer.module.parameters(), layer_copy.module.parameters()
-            ):
+            for p1, p2 in zip(layer.module.parameters(),
+                              layer_copy.module.parameters()):
                 assert torch.equal(p1.data, p2.data)

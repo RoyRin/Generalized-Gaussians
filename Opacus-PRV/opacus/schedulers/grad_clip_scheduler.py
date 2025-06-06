@@ -50,7 +50,8 @@ class _GradClipScheduler:
 
         """
         return {
-            key: value for key, value in self.__dict__.items() if key != "optimizer"
+            key: value
+            for key, value in self.__dict__.items() if key != "optimizer"
         }
 
     def load_state_dict(self, state_dict: Dict):
@@ -83,7 +84,11 @@ class ExponentialGradClip(_GradClipScheduler):
     When last_epoch=-1, sets initial max_grad_norm as max_grad_norm.
     """
 
-    def __init__(self, optimizer: DPOptimizer, *, gamma: float, last_epoch: int = -1):
+    def __init__(self,
+                 optimizer: DPOptimizer,
+                 *,
+                 gamma: float,
+                 last_epoch: int = -1):
         """
         Args:
             optimizer: Wrapped optimizer
@@ -132,7 +137,8 @@ class LambdaGradClip(_GradClipScheduler):
         super().__init__(optimizer, last_epoch=last_epoch)
 
     def get_max_grad_norm(self):
-        return self.base_max_grad_norm * self.scheduler_function(self.last_epoch)
+        return self.base_max_grad_norm * self.scheduler_function(
+            self.last_epoch)
 
 
 class StepGradClip(_GradClipScheduler):

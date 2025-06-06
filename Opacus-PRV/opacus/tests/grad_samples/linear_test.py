@@ -22,6 +22,7 @@ from .common import GradSampleHooks_test
 
 
 class Linear_test(GradSampleHooks_test):
+
     @given(
         N=st.integers(0, 4),
         Z=st.integers(1, 4),

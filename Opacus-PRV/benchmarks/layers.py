@@ -58,7 +58,8 @@ class Layer:
         self._criterion = criterion
 
     @staticmethod
-    def _get_memory_difference(device: torch.device, stats: Dict[str, int]) -> int:
+    def _get_memory_difference(device: torch.device, stats: Dict[str,
+                                                                 int]) -> int:
         """If applicable, computes the device's CUDA memory difference between the
         sum of the values in the stats dict and the current allocated CUDA memory.
 
@@ -76,7 +77,8 @@ class Layer:
             return torch.cuda.memory_allocated(device) - sum(stats.values())
         return 0
 
-    def _inputs_to(self, device: torch.device, stats: Dict[str, int]) -> Dict[str, int]:
+    def _inputs_to(self, device: torch.device,
+                   stats: Dict[str, int]) -> Dict[str, int]:
         """Some modules (e.g. RNNs) take additional layer inputs such as initial
         hidden state. These modules should override this function accordingly.
 
@@ -88,7 +90,8 @@ class Layer:
         Returns: updated stats dictionary with input tensor sizes
         """
         self._input_tensor = self._input_tensor.to(device)
-        stats["input_tensor"] = self._get_memory_difference(device=device, stats=stats)
+        stats["input_tensor"] = self._get_memory_difference(device=device,
+                                                            stats=stats)
         return stats
 
     def to(self, device: torch.device) -> Dict[str, int]:
@@ -103,16 +106,19 @@ class Layer:
             set to 0.
         """
         stats: Dict[str, int] = {}
-        stats["offset"] = self._get_memory_difference(device=device, stats=stats)
+        stats["offset"] = self._get_memory_difference(device=device,
+                                                      stats=stats)
 
         # some modules take additional inputs such as hidden state
         stats = self._inputs_to(device=device, stats=stats)
 
         self._module = self._module.to(device)
-        stats["layer"] = self._get_memory_difference(device=device, stats=stats)
+        stats["layer"] = self._get_memory_difference(device=device,
+                                                     stats=stats)
 
         self._labels = self._labels.to(device)
-        stats["labels"] = self._get_memory_difference(device=device, stats=stats)
+        stats["labels"] = self._get_memory_difference(device=device,
+                                                      stats=stats)
 
         # check that all memory is accounted for
         if device.type == "cuda":
@@ -141,6 +147,7 @@ class Layer:
 
 
 class LinearBase(Layer):
+
     def __init__(
         self,
         *,
@@ -163,6 +170,7 @@ class LinearBase(Layer):
 
 
 class ConvBase(Layer):
+
     def __init__(
         self,
         *,
@@ -210,6 +218,7 @@ class ConvBase(Layer):
 
 
 class LayerNormBase(Layer):
+
     def __init__(
         self,
         *,
@@ -233,6 +242,7 @@ class LayerNormBase(Layer):
 
 
 class InstanceNormBase(Layer):
+
     def __init__(
         self,
         *,
@@ -257,7 +267,8 @@ class InstanceNormBase(Layer):
         else:
             raise Exception("Input shape must be between 1 and 3 long")
 
-        self._input_tensor = torch.randn(batch_size, num_features, *input_shape)
+        self._input_tensor = torch.randn(batch_size, num_features,
+                                         *input_shape)
         self._module = self._module_name(
             num_features=num_features,
             eps=eps,
@@ -268,6 +279,7 @@ class InstanceNormBase(Layer):
 
 
 class GroupNormBase(Layer):
+
     def __init__(
         self,
         *,
@@ -282,14 +294,17 @@ class GroupNormBase(Layer):
     ) -> None:
         super().__init__(random_seed=random_seed, criterion=criterion)
 
-        self._input_tensor = torch.randn(batch_size, num_channels, *input_shape)
-        self._module = nn.GroupNorm(
-            num_groups=num_groups, num_channels=num_channels, eps=eps, affine=affine
-        )
+        self._input_tensor = torch.randn(batch_size, num_channels,
+                                         *input_shape)
+        self._module = nn.GroupNorm(num_groups=num_groups,
+                                    num_channels=num_channels,
+                                    eps=eps,
+                                    affine=affine)
         self._labels = torch.randn(self._input_tensor.shape)
 
 
 class EmbeddingBase(Layer):
+
     def __init__(
         self,
         *,
@@ -325,6 +340,7 @@ class EmbeddingBase(Layer):
 
 
 class MHABase(Layer):
+
     def __init__(
         self,
         *,
@@ -349,21 +365,15 @@ class MHABase(Layer):
         kdim = kdim if kdim else embed_dim
         vdim = vdim if vdim else embed_dim
 
-        self._input_tensor = (
-            torch.randn(targ_seq_len, batch_size, embed_dim)
-            if not batch_first
-            else torch.randn(batch_size, targ_seq_len, embed_dim)
-        )
-        self._key = (
-            torch.randn(source_seq_len, batch_size, kdim)
-            if not batch_first
-            else torch.randn(batch_size, source_seq_len, kdim)
-        )
-        self._value = (
-            torch.randn(source_seq_len, batch_size, vdim)
-            if not batch_first
-            else torch.randn(batch_size, source_seq_len, vdim)
-        )
+        self._input_tensor = (torch.randn(targ_seq_len, batch_size, embed_dim)
+                              if not batch_first else torch.randn(
+                                  batch_size, targ_seq_len, embed_dim))
+        self._key = (torch.randn(source_seq_len, batch_size, kdim)
+                     if not batch_first else torch.randn(
+                         batch_size, source_seq_len, kdim))
+        self._value = (torch.randn(source_seq_len, batch_size, vdim)
+                       if not batch_first else torch.randn(
+                           batch_size, source_seq_len, vdim))
         self._module = layer(
             embed_dim,
             num_heads,
@@ -374,13 +384,12 @@ class MHABase(Layer):
             kdim=kdim,
             vdim=vdim,
         )
-        self._labels = (
-            torch.randn(targ_seq_len, batch_size, embed_dim)
-            if not batch_first
-            else torch.randn(batch_size, targ_seq_len, embed_dim)
-        )
+        self._labels = (torch.randn(targ_seq_len, batch_size, embed_dim)
+                        if not batch_first else torch.randn(
+                            batch_size, targ_seq_len, embed_dim))
 
-    def _inputs_to(self, device: torch.device, stats: Dict[str, int]) -> Dict[str, int]:
+    def _inputs_to(self, device: torch.device,
+                   stats: Dict[str, int]) -> Dict[str, int]:
         """MultiheadAttention takes additional layer inputs key and value.
 
         Args:
@@ -394,7 +403,8 @@ class MHABase(Layer):
         self._key = self._key.to(device)
         stats["key"] = self._get_memory_difference(device=device, stats=stats)
         self._value = self._value.to(device)
-        stats["value"] = self._get_memory_difference(device=device, stats=stats)
+        stats["value"] = self._get_memory_difference(device=device,
+                                                     stats=stats)
         return stats
 
     def forward_only(self) -> torch.Tensor:
@@ -402,6 +412,7 @@ class MHABase(Layer):
 
 
 class RNNBase(Layer):
+
     def __init__(
         self,
         *,
@@ -421,15 +432,11 @@ class RNNBase(Layer):
     ) -> None:
         super().__init__(random_seed=random_seed, criterion=criterion)
 
-        self._input_tensor = (
-            torch.randn(
-                seq_len,
-                batch_size,
-                input_size,
-            )
-            if not batch_first
-            else torch.randn(batch_size, seq_len, input_size)
-        )
+        self._input_tensor = (torch.randn(
+            seq_len,
+            batch_size,
+            input_size,
+        ) if not batch_first else torch.randn(batch_size, seq_len, input_size))
 
         D = 2 if bidirectional else 1
         self._h_0 = torch.randn(D * num_layers, batch_size, hidden_size)
@@ -445,13 +452,12 @@ class RNNBase(Layer):
             **kwargs,
         )
 
-        self._labels = (
-            torch.randn(seq_len, batch_size, D * hidden_size)
-            if not batch_first
-            else torch.randn(batch_size, seq_len, D * hidden_size)
-        )
+        self._labels = (torch.randn(seq_len, batch_size, D *
+                                    hidden_size) if not batch_first else
+                        torch.randn(batch_size, seq_len, D * hidden_size))
 
-    def _inputs_to(self, device: torch.device, stats: Dict[str, int]) -> Dict[str, int]:
+    def _inputs_to(self, device: torch.device,
+                   stats: Dict[str, int]) -> Dict[str, int]:
         """RNNs take additional layer inputs h_0.
 
         Args:
@@ -471,6 +477,7 @@ class RNNBase(Layer):
 
 
 class LSTMBase(RNNBase):
+
     def __init__(
         self,
         *,
@@ -508,13 +515,12 @@ class LSTMBase(RNNBase):
         self._h_0 = torch.randn(D * num_layers, batch_size, h_out)
         self._c_0 = torch.randn(D * num_layers, batch_size, hidden_size)
 
-        self._labels = (
-            torch.randn(seq_len, batch_size, D * h_out)
-            if not batch_first
-            else torch.randn(batch_size, seq_len, D * h_out)
-        )
+        self._labels = (torch.randn(seq_len, batch_size, D *
+                                    h_out) if not batch_first else torch.randn(
+                                        batch_size, seq_len, D * h_out))
 
-    def _inputs_to(self, device: torch.device, stats: Dict[str, int]) -> Dict[str, int]:
+    def _inputs_to(self, device: torch.device,
+                   stats: Dict[str, int]) -> Dict[str, int]:
         """LSTMs take additional layer inputs h_0, c_0.
 
         Args:
@@ -538,11 +544,12 @@ class LSTMBase(RNNBase):
 
 
 class LayerFactory:
+
     @staticmethod
     # flake8: noqa C901
-    def create(
-        layer_name: str, gsm_mode: str = "baseline", **kwargs
-    ) -> Optional[Layer]:
+    def create(layer_name: str,
+               gsm_mode: str = "baseline",
+               **kwargs) -> Optional[Layer]:
         if gsm_mode not in ("baseline", "hooks", "ew", "functorch"):
             raise ValueError(f"Unexpected grad_sample_mode={gsm_mode}")
 

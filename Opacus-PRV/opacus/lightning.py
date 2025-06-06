@@ -21,6 +21,7 @@ from opacus.data_loader import DPDataLoader
 
 
 class DPLightningDataModule(pl.LightningDataModule):
+
     def __init__(
         self,
         datamodule: pl.LightningDataModule,
@@ -49,10 +50,10 @@ class DPLightningDataModule(pl.LightningDataModule):
     def predict_dataloader(self):
         return self.datamodule.predict_dataloader()
 
-    def transfer_batch_to_device(
-        self, batch: Any, device: torch.device, dataloader_idx: int
-    ) -> Any:
-        return self.datamodule.transfer_batch_to_device(batch, device, dataloader_idx)
+    def transfer_batch_to_device(self, batch: Any, device: torch.device,
+                                 dataloader_idx: int) -> Any:
+        return self.datamodule.transfer_batch_to_device(
+            batch, device, dataloader_idx)
 
     def on_before_batch_transfer(self, batch: Any, dataloader_idx: int) -> Any:
         return self.datamodule.on_before_batch_transfer(batch, dataloader_idx)

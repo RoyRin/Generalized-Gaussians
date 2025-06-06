@@ -24,6 +24,7 @@ from .common import GradSampleHooks_test, expander, shrinker
 
 
 class Conv1d_test(GradSampleHooks_test):
+
     @given(
         N=st.integers(0, 4),
         C=st.sampled_from([1, 3, 32]),
@@ -52,7 +53,7 @@ class Conv1d_test(GradSampleHooks_test):
             return
         out_channels = out_channels_mapper(C)
         if (
-            C % groups != 0 or out_channels % groups != 0
+                C % groups != 0 or out_channels % groups != 0
         ):  # since in_channels and out_channels must be divisible by groups
             return
 
@@ -66,6 +67,9 @@ class Conv1d_test(GradSampleHooks_test):
             dilation=dilation,
             groups=groups,
         )
-        self.run_test(
-            x, conv, batch_first=True, atol=10e-5, rtol=10e-4, ew_compatible=N > 0
-        )
+        self.run_test(x,
+                      conv,
+                      batch_first=True,
+                      atol=10e-5,
+                      rtol=10e-4,
+                      ew_compatible=N > 0)

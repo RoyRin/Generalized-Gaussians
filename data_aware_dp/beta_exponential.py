@@ -11,6 +11,7 @@ except ImportError:
 
 # coef = beta_ / (2 * np.power(scale,1/ beta) * scipy.special.gamma( 1. / beta_))
 
+
 def jax_installed_decorator(f):
     if JAX_INSTALLED:
         return f
@@ -35,7 +36,8 @@ def solve_for_k(beta, c=1):  # k is the normalization constant
         k, tail_bound_error
     """
     scale = scale_from_c(c, beta)
-    coef = beta / (2 * np.power(scale,1/ beta) * scipy.special.gamma( 1. / beta))
+    coef = beta / (2 * np.power(scale, 1 / beta) *
+                   scipy.special.gamma(1. / beta))
     return coef
 
     inv = 2 * scipy.special.gamma(1 / beta)

@@ -16,10 +16,10 @@ def prepare_layer(layer, batch_first=True):
 
     if len(list(layer.buffers())) > 0:
         raise NotImplementedError(
-            "This layer has buffers and is not supported by Opacus"
-        )
+            "This layer has buffers and is not supported by Opacus")
     if type(layer) is nn.EmbeddingBag:
-        raise NotImplementedError("Functorch does not support EmbeddingBag yet")
+        raise NotImplementedError(
+            "Functorch does not support EmbeddingBag yet")
     flayer, _ = make_functional(layer)
 
     def compute_loss_stateless_model(params, activations, backprops):
@@ -55,9 +55,8 @@ def ft_compute_per_sample_gradient(layer, activations, backprops):
     if not hasattr(layer, "ft_compute_sample_grad"):
         prepare_layer(layer)
 
-    per_sample_grads = layer.ft_compute_sample_grad(
-        parameters, activations[0], backprops
-    )
+    per_sample_grads = layer.ft_compute_sample_grad(parameters, activations[0],
+                                                    backprops)
 
     ret = {}
     for i_p, p in enumerate(parameters):

@@ -21,6 +21,7 @@ from opacus.utils.uniform_sampler import UniformWithReplacementSampler
 
 
 class PoissonSamplingTest(unittest.TestCase):
+
     def _init_data(self, seed=0):
         generator = torch.Generator()
         generator.manual_seed(seed)
@@ -29,16 +30,16 @@ class PoissonSamplingTest(unittest.TestCase):
             sample_rate=self.batch_size / len(self.dataset),
             generator=generator,
         )
-        dataloader = torch.utils.data.DataLoader(self.dataset, batch_sampler=sampler)
+        dataloader = torch.utils.data.DataLoader(self.dataset,
+                                                 batch_sampler=sampler)
 
         return sampler, dataloader
 
     def setUp(self) -> None:
         self.data_size = 100
         self.batch_size = 10
-        self.dataset = [
-            (torch.randn(10), torch.randn(10)) for _ in range(self.data_size)
-        ]
+        self.dataset = [(torch.randn(10), torch.randn(10))
+                        for _ in range(self.data_size)]
 
         self.sampler, self.dataloader = self._init_data(seed=7)
 

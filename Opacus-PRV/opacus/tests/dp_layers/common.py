@@ -65,7 +65,8 @@ def flatten(seq: Sequence) -> Sequence:
     return _flatten(seq, [])
 
 
-def default_train_fn(model: nn.Module, x: torch.Tensor, *args, **kwargs) -> None:
+def default_train_fn(model: nn.Module, x: torch.Tensor, *args,
+                     **kwargs) -> None:
     """
     Example of a default train_fn to be passed to ``compare_gradients``.
 
@@ -221,37 +222,32 @@ class DPModules_test(unittest.TestCase):
         dp_params = dp_module.state_dict()
 
         nn_only_grads = [
-            param_name
-            for param_name, param in nn_params.items()
+            param_name for param_name, param in nn_params.items()
             if param.grad is not None and param_name not in dp_params
         ]
         if nn_only_grads:
-            failed_str = "\n\t".join(
-                f"{i}. {s}" for i, s in enumerate(nn_only_grads, 1)
-            )
+            failed_str = "\n\t".join(f"{i}. {s}"
+                                     for i, s in enumerate(nn_only_grads, 1))
             raise AssertionError(
                 f"A total of {len(nn_only_grads)} gradients are in nn_module "
-                f"but not in dp_module: \n\t{failed_str}"
-            )
+                f"but not in dp_module: \n\t{failed_str}")
 
         dp_only_grads = [
-            param_name
-            for param_name, param in dp_params.items()
+            param_name for param_name, param in dp_params.items()
             if param.grad is not None and param_name not in nn_params
         ]
         if dp_only_grads:
-            failed_str = "\n\t".join(
-                f"{i}. {s}" for i, s in enumerate(nn_only_grads, 1)
-            )
+            failed_str = "\n\t".join(f"{i}. {s}"
+                                     for i, s in enumerate(nn_only_grads, 1))
             raise AssertionError(
                 f"A total of {len(dp_only_grads)} gradients are in dp_module "
-                f"but not in nn_module: \n\t{failed_str}"
-            )
+                f"but not in nn_module: \n\t{failed_str}")
 
         for param_name, nn_param in nn_params.items():
             dp_param = dp_params[param_name]
             self._check_shapes((nn_param), (dp_param), (param_name))
-            self._check_values((nn_param), (dp_param), atol, rtol, (param_name))
+            self._check_values((nn_param), (dp_param), atol, rtol,
+                               (param_name))
 
     def _check_shapes(
         self,
@@ -261,18 +257,15 @@ class DPModules_test(unittest.TestCase):
     ) -> None:
         output_names = output_names or [None] * len(nn_outs)
         failed = []
-        for i, (out_name, nn_out, dp_out) in enumerate(
-            zip(output_names, nn_outs, dp_outs)
-        ):
+        for i, (out_name, nn_out,
+                dp_out) in enumerate(zip(output_names, nn_outs, dp_outs)):
             name = f"'{out_name}'" or f"#{i}"
             if not torch.is_tensor(nn_out):
                 continue  # Won't have a shape, and value check between nontensors is done in self._check_values()
 
-            msg = (
-                f"Output {name}: "
-                f"from our DP module: {dp_out.shape}, "
-                f"from reference nn.Module: {nn_out.shape}. "
-            )
+            msg = (f"Output {name}: "
+                   f"from our DP module: {dp_out.shape}, "
+                   f"from reference nn.Module: {nn_out.shape}. ")
 
             try:
                 self.assertEqual(
@@ -285,7 +278,8 @@ class DPModules_test(unittest.TestCase):
                 failed.append(msg)
 
         if failed:
-            failed_str = "\n\t".join(f"{i}. {s}" for i, s in enumerate(failed, 1))
+            failed_str = "\n\t".join(f"{i}. {s}"
+                                     for i, s in enumerate(failed, 1))
             raise AssertionError(
                 f"A total of {len(failed)} shapes do not match \n\t{failed_str}"
             )
@@ -302,9 +296,8 @@ class DPModules_test(unittest.TestCase):
     ) -> None:
         output_names = output_names or [None] * len(nn_outs)
         failed = []
-        for i, (out_name, nn_out, dp_out) in enumerate(
-            zip(output_names, nn_outs, dp_outs)
-        ):
+        for i, (out_name, nn_out,
+                dp_out) in enumerate(zip(output_names, nn_outs, dp_outs)):
             name = f"'{out_name}'" or f"#{i}"
 
             if isinstance(nn_out, PackedSequence):
@@ -336,7 +329,8 @@ class DPModules_test(unittest.TestCase):
             except AssertionError:
                 failed.append(msg)
         if failed:
-            failed_str = "\n\t".join(f"{i}. {s}" for i, s in enumerate(failed, 1))
+            failed_str = "\n\t".join(f"{i}. {s}"
+                                     for i, s in enumerate(failed, 1))
             raise AssertionError(
                 f"A total of {len(failed)} values do not match:\n\t{failed_str}"
             )
@@ -353,14 +347,18 @@ class DPModules_test(unittest.TestCase):
         failure_msgs: Optional[Sequence] = None,
     ) -> bool:
         try:
-            padded_seq_nn, seq_lens_nn = pad_packed_sequence(nn_out, batch_first_nn)
+            padded_seq_nn, seq_lens_nn = pad_packed_sequence(
+                nn_out, batch_first_nn)
         except ValueError:
-            raise ValueError("Incorrect format of the nn.module output PackedSequence")
+            raise ValueError(
+                "Incorrect format of the nn.module output PackedSequence")
 
         try:
-            padded_seq_dp, seq_lens_dp = pad_packed_sequence(dp_out, batch_first_dp)
+            padded_seq_dp, seq_lens_dp = pad_packed_sequence(
+                dp_out, batch_first_dp)
         except ValueError:
-            raise ValueError("Incorrect format of the DP module output PackedSequence")
+            raise ValueError(
+                "Incorrect format of the DP module output PackedSequence")
 
         self._check_shapes(
             (padded_seq_nn, seq_lens_nn),
@@ -377,10 +375,14 @@ class DPModules_test(unittest.TestCase):
         )
 
         try:
-            assert_close(
-                actual=padded_seq_dp, expected=padded_seq_nn, atol=atol, rtol=rtol
-            )
-            assert_close(actual=seq_lens_dp, expected=seq_lens_nn, atol=atol, rtol=rtol)
+            assert_close(actual=padded_seq_dp,
+                         expected=padded_seq_nn,
+                         atol=atol,
+                         rtol=rtol)
+            assert_close(actual=seq_lens_dp,
+                         expected=seq_lens_nn,
+                         atol=atol,
+                         rtol=rtol)
         except AssertionError:
             if failure_msgs is not None:
                 failure_msgs.append(msg)

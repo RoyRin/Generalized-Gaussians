@@ -23,13 +23,11 @@ from opt_einsum import contract
 from .utils import register_grad_sampler
 
 
-@register_grad_sampler(
-    [
-        nn.InstanceNorm1d,
-        nn.InstanceNorm2d,
-        nn.InstanceNorm3d,
-    ]
-)
+@register_grad_sampler([
+    nn.InstanceNorm1d,
+    nn.InstanceNorm2d,
+    nn.InstanceNorm3d,
+])
 def compute_instance_norm_grad_sample(
     layer: Union[
         nn.InstanceNorm1d,

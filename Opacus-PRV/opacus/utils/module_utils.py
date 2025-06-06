@@ -21,7 +21,6 @@ from typing import Dict, Iterable, List, Tuple
 import torch
 import torch.nn as nn
 
-
 logging.basicConfig(
     format="%(asctime)s:%(levelname)s:%(message)s",
     datefmt="%m/%d/%Y %H:%M:%S",
@@ -40,11 +39,8 @@ def parametrized_modules(module: nn.Module) -> Iterable[Tuple[str, nn.Module]]:
     Recursively iterates over all submodules, returning those that
     have parameters (as opposed to "wrapper modules" that just organize modules).
     """
-    yield from (
-        (m_name, m)
-        for (m_name, m) in module.named_modules()
-        if any(p is not None for p in m.parameters(recurse=False))
-    )
+    yield from ((m_name, m) for (m_name, m) in module.named_modules()
+                if any(p is not None for p in m.parameters(recurse=False)))
 
 
 def trainable_modules(module: nn.Module) -> Iterable[Tuple[str, nn.Module]]:
@@ -52,21 +48,18 @@ def trainable_modules(module: nn.Module) -> Iterable[Tuple[str, nn.Module]]:
     Recursively iterates over all submodules, returning those that
     have parameters and are trainable (ie they want a grad).
     """
-    yield from (
-        (m_name, m)
-        for (m_name, m) in parametrized_modules(module)
-        if any(p.requires_grad for p in m.parameters(recurse=False))
-    )
+    yield from ((m_name, m) for (m_name, m) in parametrized_modules(module)
+                if any(p.requires_grad for p in m.parameters(recurse=False)))
 
 
-def trainable_parameters(module: nn.Module) -> Iterable[Tuple[str, nn.Parameter]]:
+def trainable_parameters(
+        module: nn.Module) -> Iterable[Tuple[str, nn.Parameter]]:
     """
     Recursively iterates over all parameters, returning those that
     are trainable (ie they want a grad).
     """
-    yield from (
-        (p_name, p) for (p_name, p) in module.named_parameters() if p.requires_grad
-    )
+    yield from ((p_name, p) for (p_name, p) in module.named_parameters()
+                if p.requires_grad)
 
 
 def requires_grad(module: nn.Module, *, recurse: bool = False) -> bool:
@@ -100,10 +93,10 @@ def clone_module(module: nn.Module) -> nn.Module:
         torch.save(module, bytesio)
         bytesio.seek(0)
         module_copy = torch.load(bytesio)
-    next_param = next(
-        module.parameters(), None
-    )  # Eg, InstanceNorm with affine=False has no params
-    return module_copy.to(next_param.device) if next_param is not None else module_copy
+    next_param = next(module.parameters(),
+                      None)  # Eg, InstanceNorm with affine=False has no params
+    return module_copy.to(
+        next_param.device) if next_param is not None else module_copy
 
 
 def get_submodule(module: nn.Module, target: str) -> nn.Module:
@@ -136,12 +129,12 @@ def get_submodule(module: nn.Module, target: str) -> nn.Module:
 
     for item in atoms:
         if not hasattr(mod, item):
-            raise AttributeError(
-                mod._get_name() + " has no " "attribute `" + item + "`"
-            )
+            raise AttributeError(mod._get_name() + " has no "
+                                 "attribute `" + item + "`")
         mod = getattr(mod, item)
         if not isinstance(mod, torch.nn.Module):
-            raise AttributeError("`" + item + "` is not " "an nn.Module")
+            raise AttributeError("`" + item + "` is not "
+                                 "an nn.Module")
     return mod
 
 

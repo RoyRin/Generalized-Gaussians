@@ -21,6 +21,7 @@ from opacus.validators.module_validator import ModuleValidator
 
 
 class BatchNormValidator_test(unittest.TestCase):
+
     def setUp(self):
         self.bn1 = nn.BatchNorm1d(4)
         self.bn2 = nn.BatchNorm2d(4)

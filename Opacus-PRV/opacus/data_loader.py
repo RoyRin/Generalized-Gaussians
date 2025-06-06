@@ -24,7 +24,6 @@ from torch.utils.data import BatchSampler, DataLoader, Dataset, IterableDataset,
 from torch.utils.data._utils.collate import default_collate
 from torch.utils.data.dataloader import _collate_fn_t
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -179,9 +178,11 @@ class DPDataLoader(DataLoader):
         )
 
     @classmethod
-    def from_data_loader(
-        cls, data_loader: DataLoader, *, distributed: bool = False, generator=None
-    ):
+    def from_data_loader(cls,
+                         data_loader: DataLoader,
+                         *,
+                         distributed: bool = False,
+                         generator=None):
         """
         Creates new ``DPDataLoader`` based on passed ``data_loader`` argument.
 
@@ -203,7 +204,8 @@ class DPDataLoader(DataLoader):
         """
 
         if isinstance(data_loader.dataset, IterableDataset):
-            raise ValueError("Uniform sampling is not supported for IterableDataset")
+            raise ValueError(
+                "Uniform sampling is not supported for IterableDataset")
 
         return cls(
             dataset=data_loader.dataset,
@@ -223,11 +225,9 @@ class DPDataLoader(DataLoader):
 
 
 def _is_supported_batch_sampler(sampler: Sampler):
-    return (
-        isinstance(sampler, BatchSampler)
-        or isinstance(sampler, UniformWithReplacementSampler)
-        or isinstance(sampler, DistributedUniformWithReplacementSampler)
-    )
+    return (isinstance(sampler, BatchSampler)
+            or isinstance(sampler, UniformWithReplacementSampler)
+            or isinstance(sampler, DistributedUniformWithReplacementSampler))
 
 
 def switch_generator(*, data_loader: DataLoader, generator):

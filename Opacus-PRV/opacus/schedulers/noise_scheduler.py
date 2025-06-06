@@ -50,7 +50,8 @@ class _NoiseScheduler:
 
         """
         return {
-            key: value for key, value in self.__dict__.items() if key != "optimizer"
+            key: value
+            for key, value in self.__dict__.items() if key != "optimizer"
         }
 
     def load_state_dict(self, state_dict: Dict):
@@ -84,7 +85,11 @@ class ExponentialNoise(_NoiseScheduler):
 
     """
 
-    def __init__(self, optimizer: DPOptimizer, *, gamma: float, last_epoch: int = -1):
+    def __init__(self,
+                 optimizer: DPOptimizer,
+                 *,
+                 gamma: float,
+                 last_epoch: int = -1):
         """
 
         Args:

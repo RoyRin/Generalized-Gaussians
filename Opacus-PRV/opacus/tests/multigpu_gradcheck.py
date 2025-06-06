@@ -33,7 +33,6 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader, TensorDataset
 from torch.utils.data.distributed import DistributedSampler
 
-
 PRIVACY_ALPHAS = [1 + x / 10.0 for x in range(1, 100)] + list(range(12, 64))
 
 
@@ -59,6 +58,7 @@ def cleanup():
 
 
 class ToyModel(nn.Module):
+
     def __init__(self):
         super(ToyModel, self).__init__()
         self.net1 = nn.Linear(10, 10)
@@ -92,9 +92,10 @@ def demo_basic(rank, weight, world_size, dp, clipping, grad_sample_mode):
 
     privacy_engine = PrivacyEngine()
 
-    sampler = DistributedSampler(
-        dataset, num_replicas=world_size, rank=rank, shuffle=False
-    )
+    sampler = DistributedSampler(dataset,
+                                 num_replicas=world_size,
+                                 rank=rank,
+                                 shuffle=False)
     data_loader = DataLoader(dataset, batch_size=batch_size, sampler=sampler)
     if dp:
         max_grad_norm = 1e8
@@ -113,7 +114,8 @@ def demo_basic(rank, weight, world_size, dp, clipping, grad_sample_mode):
         if clipping == "per_layer":
             assert isinstance(
                 optimizer,
-                (DistributedPerLayerOptimizer, SimpleDistributedPerLayerOptimizer),
+                (DistributedPerLayerOptimizer,
+                 SimpleDistributedPerLayerOptimizer),
             )
         else:
             assert isinstance(optimizer, DistributedDPOptimizer)
@@ -140,16 +142,18 @@ def run_demo(demo_fn, weight, world_size, dp, clipping, grad_sample_mode):
 
 
 class GradientComputationTest(unittest.TestCase):
+
     def test_gradient_correct(self):
         # Tests that gradient is the same with DP or with DDP
         n_gpus = torch.cuda.device_count()
         self.assertTrue(
-            n_gpus >= 2, f"Need at least 2 gpus but was provided only {n_gpus}."
-        )
+            n_gpus >= 2,
+            f"Need at least 2 gpus but was provided only {n_gpus}.")
 
         for clipping in ["flat", "per_layer"]:
             for grad_sample_mode in ["hooks", "ew"]:
-                weight_dp, weight_nodp = torch.zeros(10, 10), torch.zeros(10, 10)
+                weight_dp, weight_nodp = torch.zeros(10,
+                                                     10), torch.zeros(10, 10)
 
                 run_demo(
                     demo_basic,
@@ -169,5 +173,7 @@ class GradientComputationTest(unittest.TestCase):
                 )
 
                 self.assertTrue(
-                    torch.allclose(weight_dp, weight_nodp, atol=1e-5, rtol=1e-3)
-                )
+                    torch.allclose(weight_dp,
+                                   weight_nodp,
+                                   atol=1e-5,
+                                   rtol=1e-3))

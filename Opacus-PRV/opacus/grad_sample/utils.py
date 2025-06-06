@@ -24,8 +24,8 @@ from .gsm_no_op import GradSampleModuleNoOp
 
 
 def register_grad_sampler(
-    target_class_or_classes: Union[Type[nn.Module], Sequence[Type[nn.Module]]]
-):
+    target_class_or_classes: Union[Type[nn.Module],
+                                   Sequence[Type[nn.Module]]]):
     """
     Registers the decorated function as the ``grad_sampler`` of ``target_class_or_classes``, which is
     the function that will be invoked every time you want to compute a per-sample gradient
@@ -39,11 +39,8 @@ def register_grad_sampler(
     """
 
     def decorator(f):
-        target_classes = (
-            target_class_or_classes
-            if isinstance(target_class_or_classes, Sequence)
-            else [target_class_or_classes]
-        )
+        target_classes = (target_class_or_classes if isinstance(
+            target_class_or_classes, Sequence) else [target_class_or_classes])
         for target_class in target_classes:
             GradSampleModule.GRAD_SAMPLERS[target_class] = f
         return f
@@ -73,7 +70,5 @@ def get_gsm_class(grad_sample_mode: str) -> Type[AbstractGradSampleModule]:
     elif grad_sample_mode == "no_op":
         return GradSampleModuleNoOp
     else:
-        raise ValueError(
-            f"Unexpected grad_sample_mode: {grad_sample_mode}. "
-            f"Allowed values: hooks, ew"
-        )
+        raise ValueError(f"Unexpected grad_sample_mode: {grad_sample_mode}. "
+                         f"Allowed values: hooks, ew")

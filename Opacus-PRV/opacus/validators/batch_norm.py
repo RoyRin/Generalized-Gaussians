@@ -26,16 +26,15 @@ from .errors import (
 )
 from .utils import register_module_fixer, register_module_validator
 
-
 logger = logging.getLogger(__name__)
 
-BATCHNORM = Union[nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d, nn.SyncBatchNorm]
+BATCHNORM = Union[nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d,
+                  nn.SyncBatchNorm]
 INSTANCENORM = Union[nn.InstanceNorm1d, nn.InstanceNorm2d, nn.InstanceNorm3d]
 
 
 @register_module_validator(
-    [nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d, nn.SyncBatchNorm]
-)
+    [nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d, nn.SyncBatchNorm])
 def validate(module: BATCHNORM) -> List[UnsupportedModuleError]:
     return [
         ShouldReplaceModuleError(
@@ -49,14 +48,12 @@ def validate(module: BATCHNORM) -> List[UnsupportedModuleError]:
             "are all privacy-safe since they don't have this property."
             "We offer utilities to automatically replace BatchNorms to GroupNorms and we will "
             "release pretrained models to help transition, such as GN-ResNet ie a ResNet using "
-            "GroupNorm, pretrained on ImageNet"
-        )
+            "GroupNorm, pretrained on ImageNet")
     ]
 
 
 @register_module_fixer(
-    [nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d, nn.SyncBatchNorm]
-)
+    [nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d, nn.SyncBatchNorm])
 def fix(module: BATCHNORM, **kwargs) -> Union[nn.GroupNorm, INSTANCENORM]:
     logger.info(
         "The default batch_norm fixer replaces BatchNorm with GroupNorm."
@@ -64,11 +61,8 @@ def fix(module: BATCHNORM, **kwargs) -> Union[nn.GroupNorm, INSTANCENORM]:
     )
     is_replace_bn_with_in = kwargs.get("replace_bn_with_in", False)
 
-    return (
-        _batchnorm_to_instancenorm(module)
-        if is_replace_bn_with_in
-        else _batchnorm_to_groupnorm(module)
-    )
+    return (_batchnorm_to_instancenorm(module)
+            if is_replace_bn_with_in else _batchnorm_to_groupnorm(module))
 
 
 def _batchnorm_to_groupnorm(module: BATCHNORM) -> nn.GroupNorm:
@@ -86,9 +80,9 @@ def _batchnorm_to_groupnorm(module: BATCHNORM) -> nn.GroupNorm:
         A default value of 32 is chosen for the number of groups based on the
         paper *Group Normalization* https://arxiv.org/abs/1803.08494
     """
-    return nn.GroupNorm(
-        math.gcd(32, module.num_features), module.num_features, affine=module.affine
-    )
+    return nn.GroupNorm(math.gcd(32, module.num_features),
+                        module.num_features,
+                        affine=module.affine)
 
 
 def _batchnorm_to_instancenorm(module: BATCHNORM) -> INSTANCENORM:

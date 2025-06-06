@@ -54,9 +54,8 @@ class GradSampleHooks_test(unittest.TestCase):
     ):
         grad_sample_modes = ["hooks", "functorch"]
 
-        if type(module) is nn.EmbeddingBag or (
-            type(x) is not PackedSequence and is_batch_empty(x)
-        ):
+        if type(module) is nn.EmbeddingBag or (type(x) is not PackedSequence
+                                               and is_batch_empty(x)):
             grad_sample_modes = ["hooks"]
 
         if ew_compatible and batch_first and torch.__version__ >= (1, 13):
@@ -64,9 +63,8 @@ class GradSampleHooks_test(unittest.TestCase):
 
         for loss_reduction in ["sum", "mean"]:
             for grad_sample_mode in grad_sample_modes:
-                with self.subTest(
-                    grad_sample_mode=grad_sample_mode, loss_reduction=loss_reduction
-                ):
+                with self.subTest(grad_sample_mode=grad_sample_mode,
+                                  loss_reduction=loss_reduction):
                     self.run_test_with_reduction(
                         x,
                         module,
@@ -111,10 +109,10 @@ class GradSampleHooks_test(unittest.TestCase):
             chunk_method=chunk_method,
         )
 
-        self.check_shapes(microbatch_grad_samples, opacus_grad_samples, loss_reduction)
-        self.check_values(
-            microbatch_grad_samples, opacus_grad_samples, loss_reduction, atol, rtol
-        )
+        self.check_shapes(microbatch_grad_samples, opacus_grad_samples,
+                          loss_reduction)
+        self.check_values(microbatch_grad_samples, opacus_grad_samples,
+                          loss_reduction, atol, rtol)
 
     def check_shapes(
         self,
@@ -125,11 +123,9 @@ class GradSampleHooks_test(unittest.TestCase):
         failed = []
         for name, opacus_grad_sample in opacus_grad_samples.items():
             microbatch_grad_sample = microbatch_grad_samples[name]
-            msg = (
-                f"Param '{name}': "
-                f"from Opacus: {opacus_grad_sample.shape}, "
-                f"from Microbatch: {microbatch_grad_sample.shape}. "
-            )
+            msg = (f"Param '{name}': "
+                   f"from Opacus: {opacus_grad_sample.shape}, "
+                   f"from Microbatch: {microbatch_grad_sample.shape}. ")
             try:
                 self.assertEqual(
                     opacus_grad_sample.shape,
@@ -141,11 +137,11 @@ class GradSampleHooks_test(unittest.TestCase):
                 failed.append(msg)
 
         if failed:
-            failed_str = "\n\t".join(f"{i}. {s}" for i, s in enumerate(failed, 1))
+            failed_str = "\n\t".join(f"{i}. {s}"
+                                     for i, s in enumerate(failed, 1))
             raise AssertionError(
                 f"A total of {len(failed)} shapes do not match "
-                f"for loss_reduction={loss_reduction}: \n\t{failed_str}"
-            )
+                f"for loss_reduction={loss_reduction}: \n\t{failed_str}")
 
     def check_values(
         self,
@@ -174,8 +170,8 @@ class GradSampleHooks_test(unittest.TestCase):
             except AssertionError:
                 failed.append(msg)
         if failed:
-            failed_str = "\n\t".join(f"{i}. {s}" for i, s in enumerate(failed, 1))
+            failed_str = "\n\t".join(f"{i}. {s}"
+                                     for i, s in enumerate(failed, 1))
             raise AssertionError(
                 f"A total of {len(failed)} values do not match "
-                f"for loss_reduction={loss_reduction}: \n\t{failed_str}"
-            )
+                f"for loss_reduction={loss_reduction}: \n\t{failed_str}")

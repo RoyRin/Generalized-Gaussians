@@ -29,8 +29,7 @@ def validate(module: nn.MultiheadAttention) -> List[UnsupportedModuleError]:
             "We do not support nn.MultiheadAttention because its implementation uses special "
             "modules. We have written a DPMultiheadAttention class that is a drop-in replacement "
             "which is compatible with our Grad Sample hooks. Please run the recommended "
-            "replacement!"
-        )
+            "replacement!")
     ]
 
 

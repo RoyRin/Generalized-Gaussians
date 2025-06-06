@@ -78,8 +78,7 @@ def compute_safe_domain_size(
     rdp_accountant = RDPAccountant()
     for prv, max_self_composition in zip(prvs, max_self_compositions):
         rdp_accountant.history.append(
-            (prv.noise_multiplier, prv.sample_rate, max_self_composition)
-        )
+            (prv.noise_multiplier, prv.sample_rate, max_self_composition))
 
     L_max = rdp_accountant.get_epsilon(delta_error / 4)
 
@@ -88,7 +87,8 @@ def compute_safe_domain_size(
         rdp_accountant.history = [(prv.noise_multiplier, prv.sample_rate, 1)]
         L_max = max(
             L_max,
-            rdp_accountant.get_epsilon(delta=delta_error / (8 * total_compositions)),
+            rdp_accountant.get_epsilon(delta=delta_error /
+                                       (8 * total_compositions)),
         )
 
     # FIXME: this implementation is adapted from the code accompanying the paper, but

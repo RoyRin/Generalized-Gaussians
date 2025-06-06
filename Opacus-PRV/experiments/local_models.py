@@ -36,8 +36,7 @@ class CIFAR10_CNN(nn.Module):
               num_groups=None,
               bn_stats=None,
               size=None,
-              in_channel = None
-              ):
+              in_channel=None):
 
         if self.in_channels == 3:
             if size == "small":
@@ -116,7 +115,7 @@ class LSTMNet(nn.Module):
         # Embedding dimension: vocab_size + <unk>, <pad>, <eos>, <sos>
         self.emb = nn.Embedding(vocab_size + 4, 100)
         #self.lstm = nn.LSTM(100, 100)
-        self.lstm = DPLSTM(100,100)
+        self.lstm = DPLSTM(100, 100)
 
         self.fc1 = nn.Linear(100, 2)
 

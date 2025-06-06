@@ -24,8 +24,8 @@ from .utils import register_grad_sampler
 
 @register_grad_sampler(nn.Linear)
 def compute_linear_grad_sample(
-    layer: nn.Linear, activations: List[torch.Tensor], backprops: torch.Tensor
-) -> Dict[nn.Parameter, torch.Tensor]:
+        layer: nn.Linear, activations: List[torch.Tensor],
+        backprops: torch.Tensor) -> Dict[nn.Parameter, torch.Tensor]:
     """
     Computes per sample gradients for ``nn.Linear`` layer
 

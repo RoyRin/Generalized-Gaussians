@@ -149,7 +149,6 @@ def get_log_moment_interpolators(beta):
     return moment_interpolators
 
 
-
 def c_to_gaussian_sigma(c):
     """ convert c to gaussian sigma
 
@@ -337,4 +336,3 @@ def rdp_to_epsilon(rdp_val, rdp_alpha, delta=1e-5):
     """
     epsilon = rdp_val + (np.log(1 / delta) / (rdp_alpha - 1))
     return (epsilon, delta)
-

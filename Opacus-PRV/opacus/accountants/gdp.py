@@ -19,6 +19,7 @@ from .analysis import gdp as privacy_analysis
 
 
 class GaussianAccountant(IAccountant):
+
     def __init__(self):
         warnings.warn(
             "GDP accounting is experimental and can underestimate privacy expenditure."
@@ -28,18 +29,16 @@ class GaussianAccountant(IAccountant):
 
     def step(self, *, noise_multiplier: float, sample_rate: float):
         if len(self.history) >= 1:
-            last_noise_multiplier, last_sample_rate, num_steps = self.history.pop()
-            if (
-                last_noise_multiplier != noise_multiplier
-                or last_sample_rate != sample_rate
-            ):
+            last_noise_multiplier, last_sample_rate, num_steps = self.history.pop(
+            )
+            if (last_noise_multiplier != noise_multiplier
+                    or last_sample_rate != sample_rate):
                 raise ValueError(
                     "Noise multiplier and sample rate have to stay constant in GaussianAccountant."
                 )
             else:
-                self.history = [
-                    (last_noise_multiplier, last_sample_rate, num_steps + 1)
-                ]
+                self.history = [(last_noise_multiplier, last_sample_rate,
+                                 num_steps + 1)]
 
         else:
             self.history = [(noise_multiplier, sample_rate, 1)]
@@ -54,11 +53,8 @@ class GaussianAccountant(IAccountant):
                 ``False`` otherwise
         """
 
-        compute_eps = (
-            privacy_analysis.compute_eps_poisson
-            if poisson
-            else privacy_analysis.compute_eps_uniform
-        )
+        compute_eps = (privacy_analysis.compute_eps_poisson
+                       if poisson else privacy_analysis.compute_eps_uniform)
         noise_multiplier, sample_rate, num_steps = self.history[-1]
         return compute_eps(
             steps=num_steps,

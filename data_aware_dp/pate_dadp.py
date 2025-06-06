@@ -9,8 +9,6 @@ import itertools
 import tqdm
 import multiprocess as mp
 
-
-
 cwd = Path.cwd()
 labels = cwd / "multiple-teachers-for-privacy/"
 # list files in labels
@@ -25,9 +23,8 @@ file_data = {
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 
-DATASET  = "SVHN"
-DATASET  = "MNIST"
-
+DATASET = "SVHN"
+DATASET = "MNIST"
 
 mnist_train = datasets.MNIST(root='data',
                              train=True,
@@ -39,22 +36,22 @@ mnist_test = datasets.MNIST(root='data',
                             transform=transforms.ToTensor())
 
 svhn_train = datasets.SVHN(root='data',
-                                split='train',
-                                download=True,
-                                transform=transforms.ToTensor())
+                           split='train',
+                           download=True,
+                           transform=transforms.ToTensor())
 svhn_test = datasets.SVHN(root='data',
-                               split='test',
-                               download=True,
-                               transform=transforms.ToTensor())
+                          split='test',
+                          download=True,
+                          transform=transforms.ToTensor())
 
 if DATASET == "MNIST":
     teach_preds = file_data["mnist_250_teachers_labels"]
-    PATE_labels = mnist_test.test_labels[:9000] #P # based on comparing to the argmaxes, this is correct
+    PATE_labels = mnist_test.test_labels[:
+                                         9000]  #P # based on comparing to the argmaxes, this is correct
 
-    
 elif DATASET == "SVHN":
     teach_preds = file_data["svhn_250_teachers_labels"]
-    PATE_labels = svhn_test.labels #P # based on comparing to the argmaxes, this is correct
+    PATE_labels = svhn_test.labels  #P # based on comparing to the argmaxes, this is correct
 
 # take argmax
 #teach_preds = np.argmax(teach_preds, axis=0)
@@ -76,8 +73,6 @@ teach_preds_argmax = np.array(
 print(teach_preds_argmax.shape)
 pred_len = len(teach_preds_argmax)
 #N = len(mnist_test.test_labels)
-
-
 
 correct_labels = PATE_labels
 
@@ -101,7 +96,11 @@ def get_noised_argmax_accuracy(histogram, correct_label, sampler, trials=100):
         correct += int(noised_label == correct_label)
     return correct / trials
 
-def get_noised_argmax_accuracy_and_std(histograms, labels, sampler, trials = 100):
+
+def get_noised_argmax_accuracy_and_std(histograms,
+                                       labels,
+                                       sampler,
+                                       trials=100):
     accs = []
     for i in range(trials):
         noised_histograms = histograms + sampler(histograms.shape)
@@ -116,7 +115,7 @@ def get_noised_argmax_accuracy_and_std(histograms, labels, sampler, trials = 100
 classes = 10
 trials = 100
 
-total_scale_count, beta_count = 401,40
+total_scale_count, beta_count = 401, 40
 scales = np.linspace(.1, 100.1, total_scale_count)
 scales = np.array([round(x, 2) for x in scales])
 betas = [round(x, 2) for x in np.linspace(1, 4., beta_count)]
@@ -129,8 +128,10 @@ COUNTER = 0
 
 results = []
 
+
 def progress(results):
     print('.', end='', flush=True)
+
 
 def compute_acc(tup):
     global COUNTER
@@ -140,19 +141,21 @@ def compute_acc(tup):
     i, (scale, beta) = tup
 
     sampler = sampling.beta_exponential_sampler_from_scale(beta=beta,
-                                                       scale=scale)
+                                                           scale=scale)
     if False:
         acc = np.average(
             np.array([
                 get_noised_argmax_accuracy(teach_preds_histograms[i],
-                                        PATE_labels[i],
-                                        sampler,
-                                        trials=trials)
+                                           PATE_labels[i],
+                                           sampler,
+                                           trials=trials)
                 for i in range(len(PATE_labels))
             ]))
-    acc, std = get_noised_argmax_accuracy_and_std(teach_preds_histograms, 
-                                                  PATE_labels, sampler=sampler, trials=trials)
-    ret = [float(acc),float(std), float(scale), float(beta)]
+    acc, std = get_noised_argmax_accuracy_and_std(teach_preds_histograms,
+                                                  PATE_labels,
+                                                  sampler=sampler,
+                                                  trials=trials)
+    ret = [float(acc), float(std), float(scale), float(beta)]
     return ret
     print(ret)
     print(results)
@@ -163,8 +166,10 @@ print(f"Total count : {len(scale_betas)}")
 starttime = datetime.datetime.now()
 
 cpu_count = mp.cpu_count()
-with mp.Pool(cpu_count - 1 ) as pool:
-    results = list(tqdm.tqdm(pool.imap(compute_acc, scale_betas_enumerated), total=len(scale_betas_enumerated)))
+with mp.Pool(cpu_count - 1) as pool:
+    results = list(
+        tqdm.tqdm(pool.imap(compute_acc, scale_betas_enumerated),
+                  total=len(scale_betas_enumerated)))
 
     #results = p.map(compute_acc, scale_betas_enumerated)
     #results =p.apply_async(compute_acc, scale_betas_enumerated, callback=progress)

@@ -23,7 +23,6 @@ from benchmarks.benchmark_layer import run_layer_benchmark
 from benchmarks.layers import LayerType
 from benchmarks.utils import get_layer_set, get_path, save_results
 
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -48,7 +47,8 @@ def run_and_save_benchmark(
         suffix: optional string to append to result file name
     """
 
-    logger.info(f"Benchmarking {layer} {gsm_mode} layer with batch size {batch_size}.")
+    logger.info(
+        f"Benchmarking {layer} {gsm_mode} layer with batch size {batch_size}.")
     results = []
 
     for i in range(args.num_runs):
@@ -57,7 +57,8 @@ def run_and_save_benchmark(
             forward_only=args.forward_only,
             layer_name=layer,
             batch_size=batch_size,
-            random_seed=args.random_seed + i if args.random_seed is not None else None,
+            random_seed=args.random_seed +
+            i if args.random_seed is not None else None,
             gsm_mode=gsm_mode,
             **layer_config,
         )
@@ -92,22 +93,20 @@ def main(args) -> None:
         config = json.load(config_file)
 
     for layer, batch_size, gsm_mode in itertools.product(
-        args.layers, args.batch_sizes, args.grad_sample_modes
-    ):
+            args.layers, args.batch_sizes, args.grad_sample_modes):
         # skip benchmark for this layer and batch size if applicable
         if args.cont and exists(
-            get_path(
-                layer=layer,
-                batch_size=batch_size,
-                num_runs=args.num_runs,
-                num_repeats=args.num_repeats,
-                random_seed=args.random_seed,
-                forward_only=args.forward_only,
-                root=args.root,
-                suffix=args.suffix,
-                gsm_mode=gsm_mode,
-            )
-        ):
+                get_path(
+                    layer=layer,
+                    batch_size=batch_size,
+                    num_runs=args.num_runs,
+                    num_repeats=args.num_repeats,
+                    random_seed=args.random_seed,
+                    forward_only=args.forward_only,
+                    root=args.root,
+                    suffix=args.suffix,
+                    gsm_mode=gsm_mode,
+                )):
             logger.info(
                 f"Skipping {layer} ({gsm_mode}) at {batch_size} - already exists."
             )
@@ -132,8 +131,14 @@ def main(args) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    layers = [v for k, v in LayerType.__dict__.items() if not k.startswith("__")]
-    parser.add_argument("--layers", nargs="+", default=layers, type=str, choices=layers)
+    layers = [
+        v for k, v in LayerType.__dict__.items() if not k.startswith("__")
+    ]
+    parser.add_argument("--layers",
+                        nargs="+",
+                        default=layers,
+                        type=str,
+                        choices=layers)
     parser.add_argument(
         "--batch_sizes",
         nargs="+",
@@ -152,9 +157,9 @@ if __name__ == "__main__":
         type=int,
         help="number of forward/backward passes per run",
     )
-    parser.add_argument(
-        "--forward_only", action="store_true", help="only run forward passes"
-    )
+    parser.add_argument("--forward_only",
+                        action="store_true",
+                        help="only run forward passes")
     parser.add_argument(
         "--random_seed",
         type=int,
@@ -168,9 +173,9 @@ if __name__ == "__main__":
         type=str,
         help="path to config file with settings for each layer",
     )
-    parser.add_argument(
-        "--cont", action="store_true", help="only run missing experiments"
-    )
+    parser.add_argument("--cont",
+                        action="store_true",
+                        help="only run missing experiments")
     parser.add_argument(
         "--root",
         default="./results/raw/",

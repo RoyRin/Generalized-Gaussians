@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Training sentiment prediction model on IMDB movie reviews dataset.
 Architecture and reference results from https://arxiv.org/pdf/1911.11607.pdf
@@ -32,9 +31,8 @@ from tqdm import tqdm
 from transformers import BertTokenizerFast
 
 
-
-
 class SampleNet(nn.Module):
+
     def __init__(self, vocab_size: int):
         super().__init__()
         self.emb = nn.Embedding(vocab_size, 16)
@@ -95,12 +93,10 @@ def train(args, model, train_loader, optimizer, privacy_engine, epoch):
 
     if not args.disable_dp:
         epsilon = privacy_engine.accountant.get_epsilon(delta=args.delta)
-        print(
-            f"Train Epoch: {epoch} \t"
-            f"Train Loss: {np.mean(losses):.6f} "
-            f"Train Accuracy: {np.mean(accuracies):.6f} "
-            f"(ε = {epsilon:.2f}, δ = {args.delta})"
-        )
+        print(f"Train Epoch: {epoch} \t"
+              f"Train Loss: {np.mean(losses):.6f} "
+              f"Train Accuracy: {np.mean(accuracies):.6f} "
+              f"(ε = {epsilon:.2f}, δ = {args.delta})")
     else:
         print(
             f"Train Epoch: {epoch} \t Loss: {np.mean(losses):.6f} ] \t Accuracy: {np.mean(accuracies):.6f}"
@@ -128,11 +124,8 @@ def evaluate(args, model, test_loader):
             accuracies.append(acc.item())
 
     mean_accuracy = np.mean(accuracies)
-    print(
-        "\nTest set: Average loss: {:.4f}, Accuracy: {:.2f}%\n".format(
-            np.mean(losses), mean_accuracy * 100
-        )
-    )
+    print("\nTest set: Average loss: {:.4f}, Accuracy: {:.2f}%\n".format(
+        np.mean(losses), mean_accuracy * 100))
     return mean_accuracy
 
 
@@ -215,11 +208,13 @@ def main():
         "--secure-rng",
         action="store_true",
         default=False,
-        help="Enable Secure RNG to have trustworthy privacy guarantees. Comes at a performance cost",
+        help=
+        "Enable Secure RNG to have trustworthy privacy guarantees. Comes at a performance cost",
     )
-    parser.add_argument(
-        "--data-root", type=str, default="../imdb", help="Where IMDB is/will be stored"
-    )
+    parser.add_argument("--data-root",
+                        type=str,
+                        default="../imdb",
+                        help="Where IMDB is/will be stored")
     parser.add_argument(
         "-j",
         "--workers",
@@ -236,8 +231,7 @@ def main():
     tokenizer = BertTokenizerFast.from_pretrained("bert-base-cased")
     dataset = raw_dataset.map(
         lambda x: tokenizer(
-            x["text"], truncation=True, max_length=args.max_sequence_length
-        ),
+            x["text"], truncation=True, max_length=args.max_sequence_length),
         batched=True,
     )
     dataset.set_format(type="torch", columns=["input_ids", "label"])

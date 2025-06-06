@@ -1,10 +1,11 @@
 import yaml
 
+
 def open_yaml(filename):
     with open(filename, 'r') as stream:
         return yaml.safe_load(stream)
 
-   
+
 def save_yaml(d, filepath):
     """write a dictionary to a yaml file
 
@@ -14,6 +15,7 @@ def save_yaml(d, filepath):
     """
     with open(filepath, 'w') as outfile:
         yaml.dump(d, outfile, default_flow_style=False)
+
 
 def write_yaml(data, path):
     with open(path, "w") as f:

@@ -32,13 +32,12 @@ from opacus.utils.module_utils import (
     trainable_parameters,
 )
 
-
 logger = logging.getLogger(__name__)
 
 
-def create_or_accumulate_grad_sample(
-    *, param: torch.Tensor, grad_sample: torch.Tensor, max_batch_len: int
-) -> None:
+def create_or_accumulate_grad_sample(*, param: torch.Tensor,
+                                     grad_sample: torch.Tensor,
+                                     max_batch_len: int) -> None:
     """
     Creates a ``_current_grad_sample`` attribute in the given parameter, or adds to it
     if the ``_current_grad_sample`` attribute already exists.
@@ -52,14 +51,14 @@ def create_or_accumulate_grad_sample(
     """
     if param.requires_grad:
         if hasattr(param, "_current_grad_sample"):
-            param._current_grad_sample[: grad_sample.shape[0]] += grad_sample
+            param._current_grad_sample[:grad_sample.shape[0]] += grad_sample
         else:
             param._current_grad_sample = torch.zeros(
                 torch.Size([max_batch_len]) + grad_sample.shape[1:],
                 device=grad_sample.device,
                 dtype=grad_sample.dtype,
             )
-            param._current_grad_sample[: grad_sample.shape[0]] = grad_sample
+            param._current_grad_sample[:grad_sample.shape[0]] = grad_sample
 
 
 def promote_current_grad_sample(p: nn.Parameter) -> None:
@@ -131,8 +130,7 @@ class GradSampleModule(AbstractGradSampleModule):
         if errors and not strict:
             logger.info(
                 f"GradSampleModule found the following errors: {errors}."
-                "Using non-strict mode, continuing"
-            )
+                "Using non-strict mode, continuing")
 
         self.hooks_enabled = False
         self.batch_first = batch_first
@@ -152,11 +150,9 @@ class GradSampleModule(AbstractGradSampleModule):
             yield module
 
         # Don't recurse if module is handled by functorch
-        if (
-            has_trainable_params(module)
-            and type(module) not in self.GRAD_SAMPLERS
-            and type(module) not in [DPRNN, DPLSTM, DPGRU]
-        ):
+        if (has_trainable_params(module)
+                and type(module) not in self.GRAD_SAMPLERS
+                and type(module) not in [DPRNN, DPLSTM, DPGRU]):
             return
 
         for m in module.children():
@@ -202,8 +198,7 @@ class GradSampleModule(AbstractGradSampleModule):
                 prepare_layer(module, batch_first=batch_first)
 
             self.autograd_grad_sample_hooks.append(
-                module.register_forward_hook(self.capture_activations_hook)
-            )
+                module.register_forward_hook(self.capture_activations_hook))
 
             self.autograd_grad_sample_hooks.append(
                 module.register_backward_hook(
@@ -211,9 +206,7 @@ class GradSampleModule(AbstractGradSampleModule):
                         self.capture_backprops_hook,
                         loss_reduction=loss_reduction,
                         batch_first=batch_first,
-                    )
-                )
-            )
+                    )))
 
         self.enable_hooks()
 
@@ -270,11 +263,8 @@ class GradSampleModule(AbstractGradSampleModule):
         forward_input: List[torch.Tensor],
         _forward_output: torch.Tensor,
     ):
-        if (
-            not requires_grad(module)
-            or not module.training
-            or not torch.is_grad_enabled()
-        ):
+        if (not requires_grad(module) or not module.training
+                or not torch.is_grad_enabled()):
             return
 
         if not self.hooks_enabled:
@@ -282,7 +272,8 @@ class GradSampleModule(AbstractGradSampleModule):
 
         if not hasattr(module, "activations"):
             module.activations = []
-        module.activations.append([t.detach() for t in forward_input])  # pyre-ignore
+        module.activations.append([t.detach()
+                                   for t in forward_input])  # pyre-ignore
 
         for _, p in trainable_parameters(module):
             p._forward_counter += 1
@@ -337,8 +328,9 @@ class GradSampleModule(AbstractGradSampleModule):
         grad_samples = grad_sampler_fn(module, activations, backprops)
         for param, gs in grad_samples.items():
             create_or_accumulate_grad_sample(
-                param=param, grad_sample=gs, max_batch_len=module.max_batch_len
-            )
+                param=param,
+                grad_sample=gs,
+                max_batch_len=module.max_batch_len)
 
         # Detect end of current batch processing and switch accumulation
         # mode from sum to stacking. Used for RNNs and tied parameters
@@ -371,10 +363,8 @@ class GradSampleModule(AbstractGradSampleModule):
             batch_first: True is batch dimension is first
         """
         if not hasattr(module, "activations"):
-            raise ValueError(
-                f"No activations detected for {type(module)},"
-                " run forward after add_hooks(model)"
-            )
+            raise ValueError(f"No activations detected for {type(module)},"
+                             " run forward after add_hooks(model)")
 
         batch_dim = 0 if batch_first or type(module) is RNNLinear else 1
 
@@ -400,12 +390,13 @@ class GradSampleModule(AbstractGradSampleModule):
         # No matter where the batch dimension was, .grad_samples will *always* put it in the first dim
         if batch_dim != 0:
             activations = [
-                t.permute([batch_dim] + [x for x in range(t.dim()) if x != batch_dim])
+                t.permute([batch_dim] +
+                          [x for x in range(t.dim()) if x != batch_dim])
                 for t in activations
             ]
             backprops = backprops.permute(
-                [batch_dim] + [x for x in range(backprops.dim()) if x != batch_dim]
-            )
+                [batch_dim] +
+                [x for x in range(backprops.dim()) if x != batch_dim])
 
         return activations, backprops
 
@@ -432,9 +423,10 @@ class GradSampleModule(AbstractGradSampleModule):
         return True
 
     @classmethod
-    def validate(
-        cls, module: nn.Module, *, strict: bool = False
-    ) -> List[NotImplementedError]:
+    def validate(cls,
+                 module: nn.Module,
+                 *,
+                 strict: bool = False) -> List[NotImplementedError]:
         """
         Check if per sample gradients can be fully computed for a given model
 
@@ -453,21 +445,18 @@ class GradSampleModule(AbstractGradSampleModule):
                 If ``raise_if_error=True`` and unsupported modules are found
         """
         errors = []
-        errors.extend(
-            [
-                NotImplementedError(
-                    f"Model contains a trainable layer "
-                    f"that Opacus doesn't currently support({m_name}:{m}). "
-                    f"Please implement and register grad sampler for this layer. "
-                    f"(See opacus.grad_sample.utils.register_grad_sampler)"
-                )
-                for m_name, m in trainable_modules(module)
-                # With functorch, all modules are trainable
-                # We still want to avoid module that have buffers (e.g. BatchNorm)
-                # as the buffers are not private
-                if len(list(m.buffers())) > 0
-            ]
-        )
+        errors.extend([
+            NotImplementedError(
+                f"Model contains a trainable layer "
+                f"that Opacus doesn't currently support({m_name}:{m}). "
+                f"Please implement and register grad sampler for this layer. "
+                f"(See opacus.grad_sample.utils.register_grad_sampler)")
+            for m_name, m in trainable_modules(module)
+            # With functorch, all modules are trainable
+            # We still want to avoid module that have buffers (e.g. BatchNorm)
+            # as the buffers are not private
+            if len(list(m.buffers())) > 0
+        ])
         # raise or return errors as needed
         if strict and len(errors) > 0:
             raise NotImplementedError(errors)

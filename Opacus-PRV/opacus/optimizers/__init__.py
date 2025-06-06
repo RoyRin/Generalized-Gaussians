@@ -21,7 +21,6 @@ from .ddpoptimizer import DistributedDPOptimizer
 from .optimizer import DPOptimizer
 from .perlayeroptimizer import DPPerLayerOptimizer
 
-
 __all__ = [
     "AdaClipDPOptimizer",
     "DistributedPerLayerOptimizer",
@@ -32,7 +31,9 @@ __all__ = [
 ]
 
 
-def get_optimizer_class(clipping: str, distributed: bool, grad_sample_mode: str = None):
+def get_optimizer_class(clipping: str,
+                        distributed: bool,
+                        grad_sample_mode: str = None):
     if clipping == "flat" and distributed is False:
         return DPOptimizer
     elif clipping == "flat" and distributed is True:
@@ -45,7 +46,8 @@ def get_optimizer_class(clipping: str, distributed: bool, grad_sample_mode: str 
         elif grad_sample_mode == "ew":
             return SimpleDistributedPerLayerOptimizer
         else:
-            raise ValueError(f"Unexpected grad_sample_mode: {grad_sample_mode}")
+            raise ValueError(
+                f"Unexpected grad_sample_mode: {grad_sample_mode}")
     elif clipping == "adaptive" and distributed is False:
         return AdaClipDPOptimizer
     raise ValueError(

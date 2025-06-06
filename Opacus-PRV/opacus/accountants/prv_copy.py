@@ -63,26 +63,25 @@ class PRVAccountant(IAccountant):
 
     def step(self, *, noise_multiplier: float, sample_rate: float):
         if len(self.history) >= 1:
-            (last_noise_multiplier, last_sample_rate, num_steps) = self.history.pop()
-            if (
-                last_noise_multiplier == noise_multiplier
-                and last_sample_rate == sample_rate
-            ):
+            (last_noise_multiplier, last_sample_rate,
+             num_steps) = self.history.pop()
+            if (last_noise_multiplier == noise_multiplier
+                    and last_sample_rate == sample_rate):
                 self.history.append(
-                    (last_noise_multiplier, last_sample_rate, num_steps + 1)
-                )
+                    (last_noise_multiplier, last_sample_rate, num_steps + 1))
             else:
                 self.history.append(
-                    (last_noise_multiplier, last_sample_rate, num_steps)
-                )
+                    (last_noise_multiplier, last_sample_rate, num_steps))
                 self.history.append((noise_multiplier, sample_rate, 1))
 
         else:
             self.history.append((noise_multiplier, sample_rate, 1))
 
-    def get_epsilon(
-        self, delta: float, *, eps_error: float = 0.01, delta_error: float = None
-    ) -> float:
+    def get_epsilon(self,
+                    delta: float,
+                    *,
+                    eps_error: float = 0.01,
+                    delta_error: float = None) -> float:
         """
         Return privacy budget (epsilon) expended so far.
 
@@ -124,8 +123,7 @@ class PRVAccountant(IAccountant):
         # discretize and convolve prvs
         dprvs = [discretize(tprv, domain) for tprv in tprvs]
         return compose_heterogeneous(
-            dprvs=dprvs, num_self_compositions=num_self_compositions
-        )
+            dprvs=dprvs, num_self_compositions=num_self_compositions)
 
     def _get_domain(
         self,
@@ -144,8 +142,7 @@ class PRVAccountant(IAccountant):
         )
 
         mesh_size = eps_error / np.sqrt(
-            total_self_compositions * np.log(12 / delta_error) / 2
-        )
+            total_self_compositions * np.log(12 / delta_error) / 2)
 
         return Domain.create_aligned(-L, L, mesh_size)
 

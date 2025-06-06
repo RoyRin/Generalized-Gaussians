@@ -7,23 +7,26 @@ from scipy.signal import convolve
 from .prvs import DiscretePRV
 
 
-def _compose_fourier(dprv: DiscretePRV, num_self_composition: int) -> DiscretePRV:
+def _compose_fourier(dprv: DiscretePRV,
+                     num_self_composition: int) -> DiscretePRV:
     if len(dprv) % 2 != 0:
         raise ValueError("Can only compose evenly sized discrete PRVs")
 
-    composed_pmf = irfft(rfft(dprv.pmf) ** num_self_composition)
+    composed_pmf = irfft(rfft(dprv.pmf)**num_self_composition)
 
     m = num_self_composition - 1
     if num_self_composition % 2 == 0:
         m += len(composed_pmf) // 2
     composed_pmf = np.roll(composed_pmf, m)
 
-    domain = dprv.domain.shift_right(dprv.domain.shifts * (num_self_composition - 1))
+    domain = dprv.domain.shift_right(dprv.domain.shifts *
+                                     (num_self_composition - 1))
 
     return DiscretePRV(pmf=composed_pmf, domain=domain)
 
 
-def _compose_two(dprv_left: DiscretePRV, dprv_right: DiscretePRV) -> DiscretePRV:
+def _compose_two(dprv_left: DiscretePRV,
+                 dprv_right: DiscretePRV) -> DiscretePRV:
     pmf = convolve(dprv_left.pmf, dprv_right.pmf, mode="same")
     domain = dprv_left.domain.shift_right(dprv_right.domain.shifts)
     return DiscretePRV(pmf=pmf, domain=domain)
@@ -43,9 +46,8 @@ def _compose_convolution_tree(dprvs: List[DiscretePRV]) -> DiscretePRV:
     return dprvs[0]
 
 
-def compose_heterogeneous(
-    dprvs: List[DiscretePRV], num_self_compositions: List[int]
-) -> DiscretePRV:
+def compose_heterogeneous(dprvs: List[DiscretePRV],
+                          num_self_compositions: List[int]) -> DiscretePRV:
     r"""
     Compose a heterogenous list of PRVs with multiplicity. We use FFT to compose
     identical PRVs with themselves first, then pairwise convolve the remaining PRVs.
@@ -53,7 +55,8 @@ def compose_heterogeneous(
     This is the approach taken in https://github.com/microsoft/prv_accountant
     """
     if len(dprvs) != len(num_self_compositions):
-        raise ValueError("dprvs and num_self_compositions must have the same length")
+        raise ValueError(
+            "dprvs and num_self_compositions must have the same length")
 
     dprvs = [
         _compose_fourier(dprv, num_self_composition)

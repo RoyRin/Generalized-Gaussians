@@ -66,7 +66,8 @@ def test_get_layer_set(layer_set: str, layers: List[str]) -> None:
         (2, 1),
     ],
 )
-def test_reset_peak_memory_stats(prev_max_memory: int, allocated_memory: int) -> None:
+def test_reset_peak_memory_stats(prev_max_memory: int,
+                                 allocated_memory: int) -> None:
     """Tests resetting of peak memory stats.
 
     Notes: Only the relative and not the absolute sizes of prev_max_memory and
@@ -87,7 +88,8 @@ def test_reset_peak_memory_stats(prev_max_memory: int, allocated_memory: int) ->
     prev_max_memory = torch.cuda.max_memory_allocated(device)
     allocated_memory = torch.cuda.memory_allocated(device)
     assert prev_max_memory >= allocated_memory
-    assert reset_peak_memory_stats(device) == (prev_max_memory, allocated_memory)
+    assert reset_peak_memory_stats(device) == (prev_max_memory,
+                                               allocated_memory)
 
     # clean up
     del x
@@ -148,8 +150,8 @@ def test_get_path(config: Dict[str, Any], path: str) -> None:
 
 @pytest.fixture(scope="function")
 def pickle_data_and_config(
-    config: Dict[str, Any], root: str, suffix: str
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        config: Dict[str, Any], root: str,
+        suffix: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     # setup test directory and save results to pickle file
     os.mkdir(root)
     try:
@@ -194,8 +196,7 @@ def pickle_data_and_config(
     ],
 )
 def test_save_results(
-    pickle_data_and_config: Tuple[Dict[str, Any], Dict[str, Any]]
-) -> None:
+        pickle_data_and_config: Tuple[Dict[str, Any], Dict[str, Any]]) -> None:
     """Tests saving benchmark results.
 
     Args:

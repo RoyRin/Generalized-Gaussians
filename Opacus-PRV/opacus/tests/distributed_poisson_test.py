@@ -21,6 +21,7 @@ from opacus.utils.uniform_sampler import DistributedUniformWithReplacementSample
 
 
 class PoissonSamplingTest(unittest.TestCase):
+
     def _init_data(self, seed=0):
         generator = torch.Generator()
         generator.manual_seed(seed)
@@ -35,9 +36,8 @@ class PoissonSamplingTest(unittest.TestCase):
                 sample_rate=self.batch_size / len(self.dataset),
                 generator=generator,
             )
-            dataloader = torch.utils.data.DataLoader(
-                self.dataset, batch_sampler=sampler
-            )
+            dataloader = torch.utils.data.DataLoader(self.dataset,
+                                                     batch_sampler=sampler)
 
             samplers.append(sampler)
             dataloaders.append(dataloader)
@@ -48,9 +48,8 @@ class PoissonSamplingTest(unittest.TestCase):
         self.world_size = 2
         self.data_size = 100
         self.batch_size = 10
-        self.dataset = [
-            (torch.randn(10), torch.randn(10)) for _ in range(self.data_size)
-        ]
+        self.dataset = [(torch.randn(10), torch.randn(10))
+                        for _ in range(self.data_size)]
 
         self.samplers, self.dataloaders = self._init_data(seed=7)
 
@@ -67,9 +66,9 @@ class PoissonSamplingTest(unittest.TestCase):
                 batch_sizes.append(x.shape[0])
 
             self.assertGreater(len(set(batch_sizes)), 1)
-            self.assertAlmostEqual(
-                np.mean(batch_sizes), self.batch_size // self.world_size, delta=2
-            )
+            self.assertAlmostEqual(np.mean(batch_sizes),
+                                   self.batch_size // self.world_size,
+                                   delta=2)
 
     def test_separate_batches(self):
         indices = {
@@ -79,7 +78,8 @@ class PoissonSamplingTest(unittest.TestCase):
         for rank1 in range(self.world_size):
             for rank2 in range(rank1 + 1, self.world_size):
                 # Separate workers output separate indices
-                self.assertEqual(len(set(indices[rank1]) & set(indices[rank2])), 0)
+                self.assertEqual(
+                    len(set(indices[rank1]) & set(indices[rank2])), 0)
 
         all_indices = set()
         for rank in range(self.world_size):

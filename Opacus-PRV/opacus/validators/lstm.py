@@ -29,8 +29,7 @@ def validate(module: nn.LSTM) -> List[UnsupportedModuleError]:
             "We do not support nn.LSTM because its implementation uses special "
             "modules. We have written a DPLSTM class that is a drop-in replacement "
             "which is compatible with our Grad Sample hooks. Please run the recommended "
-            "replacement!"
-        )
+            "replacement!")
     ]
 
 

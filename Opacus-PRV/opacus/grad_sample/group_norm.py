@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from typing import Dict, List
 
 import torch
@@ -41,7 +40,8 @@ def compute_group_norm_grad_sample(
     activations = activations[0]
     ret = {}
     if layer.weight.requires_grad:
-        gs = F.group_norm(activations, layer.num_groups, eps=layer.eps) * backprops
+        gs = F.group_norm(activations, layer.num_groups,
+                          eps=layer.eps) * backprops
         ret[layer.weight] = contract("ni...->ni", gs)
     if layer.bias is not None and layer.bias.requires_grad:
         ret[layer.bias] = contract("ni...->ni", backprops)

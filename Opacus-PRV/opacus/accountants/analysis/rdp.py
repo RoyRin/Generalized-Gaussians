@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 r"""
 *Based on Google's TF Privacy:* https://github.com/tensorflow/privacy/blob/master/tensorflow_privacy/privacy/analysis/rdp_accountant.py.
 *Here, we update this code to Python 3, and optimize dependencies.*
@@ -50,7 +49,6 @@ from typing import List, Tuple, Union
 
 import numpy as np
 from scipy import special
-
 
 ########################
 # LOG-SPACE ARITHMETIC #
@@ -97,7 +95,8 @@ def _log_sub(logx: float, logy: float) -> float:
 
     try:
         # Use exp(x) - exp(y) = (exp(x - y) - 1) * exp(y).
-        return math.log(math.expm1(logx - logy)) + logy  # expm1(x) = exp(x) - 1
+        return math.log(
+            math.expm1(logx - logy)) + logy  # expm1(x) = exp(x) - 1
     except OverflowError:
         return logx
 
@@ -126,11 +125,8 @@ def _compute_log_a_for_int_alpha(q: float, sigma: float, alpha: int) -> float:
     log_a = -np.inf
 
     for i in range(alpha + 1):
-        log_coef_i = (
-            math.log(special.binom(alpha, i))
-            + i * math.log(q)
-            + (alpha - i) * math.log(1 - q)
-        )
+        log_coef_i = (math.log(special.binom(alpha, i)) + i * math.log(q) +
+                      (alpha - i) * math.log(1 - q))
 
         s = log_coef_i + (i * i - i) / (2 * (sigma**2))
         log_a = _log_add(log_a, s)
@@ -138,7 +134,8 @@ def _compute_log_a_for_int_alpha(q: float, sigma: float, alpha: int) -> float:
     return float(log_a)
 
 
-def _compute_log_a_for_frac_alpha(q: float, sigma: float, alpha: float) -> float:
+def _compute_log_a_for_frac_alpha(q: float, sigma: float,
+                                  alpha: float) -> float:
     r"""Computes :math:`log(A_\alpha)` for fractional ``alpha``.
 
     Notes:
@@ -260,8 +257,8 @@ def _compute_rdp(q: float, sigma: float, alpha: float) -> float:
 
 
 def compute_rdp(
-    *, q: float, noise_multiplier: float, steps: int, orders: Union[List[float], float]
-) -> Union[List[float], float]:
+        *, q: float, noise_multiplier: float, steps: int,
+        orders: Union[List[float], float]) -> Union[List[float], float]:
     r"""Computes Renyi Differential Privacy (RDP) guarantees of the
     Sampled Gaussian Mechanism (SGM) iterated ``steps`` times.
 
@@ -281,14 +278,15 @@ def compute_rdp(
     if isinstance(orders, float):
         rdp = _compute_rdp(q, noise_multiplier, orders)
     else:
-        rdp = np.array([_compute_rdp(q, noise_multiplier, order) for order in orders])
+        rdp = np.array(
+            [_compute_rdp(q, noise_multiplier, order) for order in orders])
 
     return rdp * steps
 
 
-def get_privacy_spent(
-    *, orders: Union[List[float], float], rdp: Union[List[float], float], delta: float
-) -> Tuple[float, float]:
+def get_privacy_spent(*, orders: Union[List[float],
+                                       float], rdp: Union[List[float], float],
+                      delta: float) -> Tuple[float, float]:
     r"""Computes epsilon given a list of Renyi Differential Privacy (RDP) values at
     multiple RDP orders and target ``delta``.
     The computation of epslion, i.e. conversion from RDP to (eps, delta)-DP,
@@ -310,17 +308,12 @@ def get_privacy_spent(
     rdp_vec = np.atleast_1d(rdp)
 
     if len(orders_vec) != len(rdp_vec):
-        raise ValueError(
-            f"Input lists must have the same length.\n"
-            f"\torders_vec = {orders_vec}\n"
-            f"\trdp_vec = {rdp_vec}\n"
-        )
+        raise ValueError(f"Input lists must have the same length.\n"
+                         f"\torders_vec = {orders_vec}\n"
+                         f"\trdp_vec = {rdp_vec}\n")
 
-    eps = (
-        rdp_vec
-        - (np.log(delta) + np.log(orders_vec)) / (orders_vec - 1)
-        + np.log((orders_vec - 1) / orders_vec)
-    )
+    eps = (rdp_vec - (np.log(delta) + np.log(orders_vec)) / (orders_vec - 1) +
+           np.log((orders_vec - 1) / orders_vec))
 
     # special case when there is no privacy
     if np.isnan(eps).all():

@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Utils for generating stats from torch tensors.
 """
@@ -24,9 +23,9 @@ import torch
 import torch.nn.functional as F
 
 
-def calc_sample_norms(
-    named_params: Iterator[Tuple[str, torch.Tensor]], *, flat: bool = True
-) -> List[torch.Tensor]:
+def calc_sample_norms(named_params: Iterator[Tuple[str, torch.Tensor]],
+                      *,
+                      flat: bool = True) -> List[torch.Tensor]:
     r"""
     Calculates the norm of the given tensors for each sample.
 
@@ -50,7 +49,10 @@ def calc_sample_norms(
         >>> norms, norms[0].shape
         ([tensor([...])], torch.Size([2]))
     """
-    norms = [param.view(len(param), -1).norm(2, dim=-1) for name, param in named_params]
+    norms = [
+        param.view(len(param), -1).norm(2, dim=-1)
+        for name, param in named_params
+    ]
     # calc norm over all layer norms if flat = True
     if flat:
         norms = [torch.stack(norms, dim=0).norm(2, dim=0)]
@@ -84,9 +86,8 @@ def calc_sample_norms_one_layer(param: torch.Tensor) -> torch.Tensor:
     return norms
 
 
-def sum_over_all_but_batch_and_last_n(
-    tensor: torch.Tensor, n_dims: int
-) -> torch.Tensor:
+def sum_over_all_but_batch_and_last_n(tensor: torch.Tensor,
+                                      n_dims: int) -> torch.Tensor:
     r"""
     Calculates the sum over all dimensions, except the first
     (batch dimension), and excluding the last n_dims.
@@ -143,18 +144,12 @@ def unfold2d(
             padding[1],
         )
 
-    H_effective = (
-        H
-        + pad_H_left
-        + pad_H_right
-        - (kernel_size[0] + (kernel_size[0] - 1) * (dilation[0] - 1))
-    ) // stride[0] + 1
-    W_effective = (
-        W
-        + pad_W_left
-        + pad_W_right
-        + -(kernel_size[1] + (kernel_size[1] - 1) * (dilation[1] - 1))
-    ) // stride[1] + 1
+    H_effective = (H + pad_H_left + pad_H_right -
+                   (kernel_size[0] + (kernel_size[0] - 1) *
+                    (dilation[0] - 1))) // stride[0] + 1
+    W_effective = (W + pad_W_left + pad_W_right +
+                   -(kernel_size[1] + (kernel_size[1] - 1) *
+                     (dilation[1] - 1))) // stride[1] + 1
     # F.pad's first argument is the padding of the *last* dimension
     input = F.pad(input, (pad_W_left, pad_W_right, pad_H_left, pad_H_right))
     *shape_pad, H_pad, W_pad = input.shape
@@ -166,8 +161,8 @@ def unfold2d(
         stride[1],
     ]
     out = input.as_strided(
-        shape + [kernel_size[0], kernel_size[1], H_effective, W_effective], strides
-    )
+        shape + [kernel_size[0], kernel_size[1], H_effective, W_effective],
+        strides)
 
     return out.reshape(input.size(0), -1, H_effective * W_effective)
 
@@ -256,7 +251,8 @@ def unfold3d(
     # Input shape: (B, C, D, H, W)
     tensor = F.pad(
         tensor,
-        (pad_W_left, pad_W_right, pad_H_left, pad_H_right, pad_D_left, pad_D_right),
+        (pad_W_left, pad_W_right, pad_H_left, pad_H_right, pad_D_left,
+         pad_D_right),
     )
     # Output shape: (B, C, D+pad_W_left+pad_W_right, H+pad_H_left+pad_H_right, W+pad_D_left+pad_D_right)
 
@@ -266,12 +262,19 @@ def unfold3d(
         kernel_size[2] + (kernel_size[2] - 1) * (dilation[2] - 1),
     )
 
-    tensor = tensor.unfold(dimension=2, size=dilated_kernel_size[0], step=stride[0])
-    tensor = tensor.unfold(dimension=3, size=dilated_kernel_size[1], step=stride[1])
-    tensor = tensor.unfold(dimension=4, size=dilated_kernel_size[2], step=stride[2])
+    tensor = tensor.unfold(dimension=2,
+                           size=dilated_kernel_size[0],
+                           step=stride[0])
+    tensor = tensor.unfold(dimension=3,
+                           size=dilated_kernel_size[1],
+                           step=stride[1])
+    tensor = tensor.unfold(dimension=4,
+                           size=dilated_kernel_size[2],
+                           step=stride[2])
 
     if dilation != (1, 1, 1):
-        tensor = filter_dilated_rows(tensor, dilation, dilated_kernel_size, kernel_size)
+        tensor = filter_dilated_rows(tensor, dilation, dilated_kernel_size,
+                                     kernel_size)
 
     # Output shape: (B, C, D_out, H_out, W_out, kernel_size[0], kernel_size[1], kernel_size[2])
     # For D_out, H_out, W_out definitions see :class:`torch.nn.Unfold`
@@ -279,9 +282,8 @@ def unfold3d(
     tensor = tensor.permute(0, 2, 3, 4, 1, 5, 6, 7)
     # Output shape: (B, D_out, H_out, W_out, C, kernel_size[0], kernel_size[1], kernel_size[2])
 
-    tensor = tensor.reshape(batch_size, -1, channels * np.prod(kernel_size)).transpose(
-        1, 2
-    )
+    tensor = tensor.reshape(batch_size, -1,
+                            channels * np.prod(kernel_size)).transpose(1, 2)
     # Output shape: (B, D_out * H_out * W_out, C * kernel_size[0] * kernel_size[1] * kernel_size[2]
 
     return tensor
@@ -322,7 +324,8 @@ def filter_dilated_rows(
     kernel_rank = len(kernel_size)
 
     indices_to_keep = [
-        list(range(0, dilated_kernel_size[i], dilation[i])) for i in range(kernel_rank)
+        list(range(0, dilated_kernel_size[i], dilation[i]))
+        for i in range(kernel_rank)
     ]
 
     tensor_np = tensor.numpy()
@@ -330,6 +333,8 @@ def filter_dilated_rows(
     axis_offset = len(tensor.shape) - kernel_rank
 
     for dim in range(kernel_rank):
-        tensor_np = np.take(tensor_np, indices_to_keep[dim], axis=axis_offset + dim)
+        tensor_np = np.take(tensor_np,
+                            indices_to_keep[dim],
+                            axis=axis_offset + dim)
 
     return torch.Tensor(tensor_np)

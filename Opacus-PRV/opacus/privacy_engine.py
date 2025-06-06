@@ -544,7 +544,7 @@ class PrivacyEngine:
             beta_sampler=beta_sampler,
         )
 
-    def get_epsilon(self, delta, beta=None, dimension= 1):
+    def get_epsilon(self, delta, beta=None, dimension=1):
         """
         Computes the (epsilon, delta) privacy budget spent so far.
 
@@ -556,7 +556,10 @@ class PrivacyEngine:
         """
         # NOTE/ TODO: only custom PRV for EPM takes beta as an argument - so this could break non-PRV accounting things
         print(f"getting epsil for {beta}")
-        return self.accountant.get_epsilon(delta, beta=beta, eps_error=1e-2, dimension=dimension)
+        return self.accountant.get_epsilon(delta,
+                                           beta=beta,
+                                           eps_error=1e-2,
+                                           dimension=dimension)
 
     def save_checkpoint(
         self,

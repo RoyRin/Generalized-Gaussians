@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Runs CIFAR10 training with differential privacy.
 """
@@ -37,7 +36,6 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torchvision.datasets import CIFAR10
 from tqdm import tqdm
 
-
 logging.basicConfig(
     format="%(asctime)s:%(levelname)s:%(message)s",
     datefmt="%m/%d/%Y %H:%M:%S",
@@ -51,11 +49,11 @@ def setup(args):
     if not torch.cuda.is_available():
         raise NotImplementedError(
             "DistributedDataParallel device_ids and output_device arguments \
-            only work with single-device GPU modules"
-        )
+            only work with single-device GPU modules")
 
     if sys.platform == "win32":
-        raise NotImplementedError("Windows version of multi-GPU is not supported yet.")
+        raise NotImplementedError(
+            "Windows version of multi-GPU is not supported yet.")
 
     # Initialize the process group on a Slurm cluster
     if os.environ.get("SLURM_NTASKS") is not None:
@@ -65,9 +63,9 @@ def setup(args):
         os.environ["MASTER_ADDR"] = "127.0.0.1"
         os.environ["MASTER_PORT"] = "7440"
 
-        torch.distributed.init_process_group(
-            args.dist_backend, rank=rank, world_size=world_size
-        )
+        torch.distributed.init_process_group(args.dist_backend,
+                                             rank=rank,
+                                             world_size=world_size)
 
         logger.debug(
             f"Setup on Slurm: rank={rank}, local_rank={local_rank}, world_size={world_size}"
@@ -167,8 +165,7 @@ def train(args, model, train_loader, optimizer, privacy_engine, epoch, device):
 
         if args.grad_sample_mode == "no_op":
             per_sample_grads, per_sample_losses = ft_compute_sample_grad(
-                params, images, target
-            )
+                params, images, target)
             per_sample_grads = [g.detach() for g in per_sample_grads]
             loss = torch.mean(per_sample_losses)
             for p, g in zip(params, per_sample_grads):
@@ -194,19 +191,16 @@ def train(args, model, train_loader, optimizer, privacy_engine, epoch, device):
 
         if i % args.print_freq == 0:
             if not args.disable_dp:
-                epsilon = privacy_engine.accountant.get_epsilon(delta=args.delta)
-                print(
-                    f"\tTrain Epoch: {epoch} \t"
-                    f"Loss: {np.mean(losses):.6f} "
-                    f"Acc@1: {np.mean(top1_acc):.6f} "
-                    f"(ε = {epsilon:.2f}, δ = {args.delta})"
-                )
+                epsilon = privacy_engine.accountant.get_epsilon(
+                    delta=args.delta)
+                print(f"\tTrain Epoch: {epoch} \t"
+                      f"Loss: {np.mean(losses):.6f} "
+                      f"Acc@1: {np.mean(top1_acc):.6f} "
+                      f"(ε = {epsilon:.2f}, δ = {args.delta})")
             else:
-                print(
-                    f"\tTrain Epoch: {epoch} \t"
-                    f"Loss: {np.mean(losses):.6f} "
-                    f"Acc@1: {np.mean(top1_acc):.6f} "
-                )
+                print(f"\tTrain Epoch: {epoch} \t"
+                      f"Loss: {np.mean(losses):.6f} "
+                      f"Acc@1: {np.mean(top1_acc):.6f} ")
     train_duration = datetime.now() - start_time
     return train_duration
 
@@ -233,7 +227,9 @@ def test(args, model, test_loader, device):
 
     top1_avg = np.mean(top1_acc)
 
-    print(f"\tTest set:" f"Loss: {np.mean(losses):.6f} " f"Acc@1: {top1_avg :.6f} ")
+    print(f"\tTest set:"
+          f"Loss: {np.mean(losses):.6f} "
+          f"Acc@1: {top1_avg :.6f} ")
     return np.mean(top1_acc)
 
 
@@ -274,17 +270,18 @@ def main():
     ]
     normalize = [
         transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        transforms.Normalize((0.4914, 0.4822, 0.4465),
+                             (0.2023, 0.1994, 0.2010)),
     ]
     train_transform = transforms.Compose(
-        augmentations + normalize if args.disable_dp else normalize
-    )
+        augmentations + normalize if args.disable_dp else normalize)
 
     test_transform = transforms.Compose(normalize)
 
-    train_dataset = CIFAR10(
-        root=args.data_root, train=True, download=True, transform=train_transform
-    )
+    train_dataset = CIFAR10(root=args.data_root,
+                            train=True,
+                            download=True,
+                            transform=train_transform)
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
@@ -294,9 +291,10 @@ def main():
         pin_memory=True,
     )
 
-    test_dataset = CIFAR10(
-        root=args.data_root, train=False, download=True, transform=test_transform
-    )
+    test_dataset = CIFAR10(root=args.data_root,
+                           train=False,
+                           download=True,
+                           transform=test_transform)
     test_loader = torch.utils.data.DataLoader(
         test_dataset,
         batch_size=args.batch_size_test,
@@ -331,24 +329,22 @@ def main():
     elif args.optim == "Adam":
         optimizer = optim.Adam(model.parameters(), lr=args.lr)
     else:
-        raise NotImplementedError("Optimizer not recognized. Please check spelling")
+        raise NotImplementedError(
+            "Optimizer not recognized. Please check spelling")
 
     privacy_engine = None
     if not args.disable_dp:
         if args.clip_per_layer:
             # Each layer has the same clipping threshold. The total grad norm is still bounded by `args.max_per_sample_grad_norm`.
-            n_layers = len(
-                [(n, p) for n, p in model.named_parameters() if p.requires_grad]
-            )
+            n_layers = len([(n, p) for n, p in model.named_parameters()
+                            if p.requires_grad])
             max_grad_norm = [
                 args.max_per_sample_grad_norm / np.sqrt(n_layers)
             ] * n_layers
         else:
             max_grad_norm = args.max_per_sample_grad_norm
 
-        privacy_engine = PrivacyEngine(
-            secure_mode=args.secure_rng,
-        )
+        privacy_engine = PrivacyEngine(secure_mode=args.secure_rng, )
         clipping = "per_layer" if args.clip_per_layer else "flat"
         model, optimizer, train_loader = privacy_engine.make_private(
             module=model,
@@ -366,13 +362,13 @@ def main():
 
     for epoch in range(args.start_epoch, args.epochs + 1):
         if args.lr_schedule == "cos":
-            lr = args.lr * 0.5 * (1 + np.cos(np.pi * epoch / (args.epochs + 1)))
+            lr = args.lr * 0.5 * (1 + np.cos(np.pi * epoch /
+                                             (args.epochs + 1)))
             for param_group in optimizer.param_groups:
                 param_group["lr"] = lr
 
-        train_duration = train(
-            args, model, train_loader, optimizer, privacy_engine, epoch, device
-        )
+        train_duration = train(args, model, train_loader, optimizer,
+                               privacy_engine, epoch, device)
         top1_acc = test(args, model, test_loader, device)
 
         # remember best acc@1 and save checkpoint
@@ -396,12 +392,17 @@ def main():
 
     if rank == 0:
         time_per_epoch_seconds = [t.total_seconds() for t in time_per_epoch]
-        avg_time_per_epoch = sum(time_per_epoch_seconds) / len(time_per_epoch_seconds)
+        avg_time_per_epoch = sum(time_per_epoch_seconds) / len(
+            time_per_epoch_seconds)
         metrics = {
-            "accuracy": best_acc1,
-            "accuracy_per_epoch": accuracy_per_epoch,
-            "avg_time_per_epoch_str": str(timedelta(seconds=int(avg_time_per_epoch))),
-            "time_per_epoch": time_per_epoch_seconds,
+            "accuracy":
+            best_acc1,
+            "accuracy_per_epoch":
+            accuracy_per_epoch,
+            "avg_time_per_epoch_str":
+            str(timedelta(seconds=int(avg_time_per_epoch))),
+            "time_per_epoch":
+            time_per_epoch_seconds,
         }
 
         logger.info(
@@ -444,7 +445,8 @@ def parse_args():
         default=256,
         type=int,
         metavar="N",
-        help="mini-batch size for test dataset (default: 256), this is the total "
+        help=
+        "mini-batch size for test dataset (default: 256), this is the total "
         "batch size of all GPUs on the current node when "
         "using Data Parallel or Distributed Data Parallel",
     )
@@ -464,9 +466,11 @@ def parse_args():
         help="initial learning rate",
         dest="lr",
     )
-    parser.add_argument(
-        "--momentum", default=0.9, type=float, metavar="M", help="SGD momentum"
-    )
+    parser.add_argument("--momentum",
+                        default=0.9,
+                        type=float,
+                        metavar="M",
+                        help="SGD momentum")
     parser.add_argument(
         "--wd",
         "--weight-decay",
@@ -498,9 +502,10 @@ def parse_args():
         action="store_true",
         help="evaluate model on validation set",
     )
-    parser.add_argument(
-        "--seed", default=None, type=int, help="seed for initializing training. "
-    )
+    parser.add_argument("--seed",
+                        default=None,
+                        type=int,
+                        help="seed for initializing training. ")
 
     parser.add_argument(
         "--sigma",
@@ -563,18 +568,21 @@ def parse_args():
         default="SGD",
         help="Optimizer to use (Adam, RMSprop, SGD)",
     )
-    parser.add_argument(
-        "--lr-schedule", type=str, choices=["constant", "cos"], default="cos"
-    )
+    parser.add_argument("--lr-schedule",
+                        type=str,
+                        choices=["constant", "cos"],
+                        default="cos")
 
-    parser.add_argument(
-        "--device", type=str, default="cpu", help="Device on which to run the code."
-    )
+    parser.add_argument("--device",
+                        type=str,
+                        default="cpu",
+                        help="Device on which to run the code.")
     parser.add_argument(
         "--local_rank",
         type=int,
         default=-1,
-        help="Local rank if multi-GPU training, -1 for single GPU training. Will be overriden by the environment variables if running on a Slurm cluster.",
+        help=
+        "Local rank if multi-GPU training, -1 for single GPU training. Will be overriden by the environment variables if running on a Slurm cluster.",
     )
 
     parser.add_argument(
@@ -588,7 +596,8 @@ def parse_args():
         "--clip_per_layer",
         action="store_true",
         default=False,
-        help="Use static per-layer clipping with the same clipping threshold for each layer. Necessary for DDP. If `False` (default), uses flat clipping.",
+        help=
+        "Use static per-layer clipping with the same clipping threshold for each layer. Necessary for DDP. If `False` (default), uses flat clipping.",
     )
     parser.add_argument(
         "--debug",

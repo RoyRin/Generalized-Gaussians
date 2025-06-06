@@ -45,7 +45,7 @@ def _gen_packed_data(
         data = []
         seq_lengths = []
         for _ in range(minibatch_size):
-            seq_length = torch.randint(1, max_seq_length + 1, (1,)).item()
+            seq_length = torch.randint(1, max_seq_length + 1, (1, )).item()
             seq_lengths.append(seq_length)
             data.append(torch.randn(seq_length, input_dim))
 
@@ -67,23 +67,26 @@ def _gen_packed_data(
             )
     else:
         seq_lengths = [
-            torch.randint(1, max_seq_length + 1, (1,)).item()
+            torch.randint(1, max_seq_length + 1, (1, )).item()
             for _ in range(minibatch_size)
         ]
         if sorted_:
             seq_lengths = sorted(seq_lengths, reverse=True)
         padded_data = torch.zeros((max_seq_length, minibatch_size, input_dim))
         for i in range(minibatch_size):
-            padded_data[: seq_lengths[i], i, :] = torch.randn(seq_lengths[i], input_dim)
+            padded_data[:seq_lengths[i],
+                        i, :] = torch.randn(seq_lengths[i], input_dim)
 
         if sorted_:
-            packed_data = pack_padded_sequence(
-                padded_data, seq_lengths, batch_first=False, enforce_sorted=True
-            )
+            packed_data = pack_padded_sequence(padded_data,
+                                               seq_lengths,
+                                               batch_first=False,
+                                               enforce_sorted=True)
         else:
-            packed_data = pack_padded_sequence(
-                padded_data, seq_lengths, batch_first=False, enforce_sorted=False
-            )
+            packed_data = pack_padded_sequence(padded_data,
+                                               seq_lengths,
+                                               batch_first=False,
+                                               enforce_sorted=False)
 
     return packed_data
 

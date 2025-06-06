@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 
 class BasicSupportedModule(nn.Module):
+
     def __init__(self):
         super().__init__()
         self.conv = nn.Conv1d(in_channels=16, out_channels=8, kernel_size=2)
@@ -20,6 +21,7 @@ class BasicSupportedModule(nn.Module):
 
 
 class CustomLinearModule(nn.Module):
+
     def __init__(self, in_features: int, out_features: int):
         super().__init__()
         self._weight = nn.Parameter(torch.randn(out_features, in_features))
@@ -30,16 +32,22 @@ class CustomLinearModule(nn.Module):
 
 
 class MatmulModule(nn.Module):
+
     def __init__(self, input_features: int, output_features: int):
         super().__init__()
-        self.weight = nn.Parameter(torch.randn(input_features, output_features))
+        self.weight = nn.Parameter(torch.randn(input_features,
+                                               output_features))
 
     def forward(self, x):
         return torch.matmul(x, self.weight)
 
 
 class LinearWithExtraParam(nn.Module):
-    def __init__(self, in_features: int, out_features: int, hidden_dim: int = 8):
+
+    def __init__(self,
+                 in_features: int,
+                 out_features: int,
+                 hidden_dim: int = 8):
         super().__init__()
         self.fc = nn.Linear(in_features, hidden_dim)
         self.extra_param = nn.Parameter(torch.randn(hidden_dim, out_features))

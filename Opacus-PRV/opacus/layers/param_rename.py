@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from typing import Dict, Union
 
 import torch.nn as nn
@@ -108,31 +107,26 @@ class RenameParamsMixin:
         # that some keys are missing (the "old" keys). We can safely ignore those and process them
         # accordingly
 
-        missing_keys, unexpected_keys = super().load_state_dict(
-            state_dict, strict=False
-        )
+        missing_keys, unexpected_keys = super().load_state_dict(state_dict,
+                                                                strict=False)
         missing_keys = [k for k in missing_keys if k not in self.old_to_new]
         if strict:
             error_msgs = []
             if len(unexpected_keys) > 0:
                 error_msgs.insert(
                     0,
-                    "Unexpected key(s) in state_dict: {}. ".format(
-                        ", ".join('"{}"'.format(k) for k in unexpected_keys)
-                    ),
+                    "Unexpected key(s) in state_dict: {}. ".format(", ".join(
+                        '"{}"'.format(k) for k in unexpected_keys)),
                 )
             if len(missing_keys) > 0:
                 error_msgs.insert(
                     0,
-                    "Missing key(s) in state_dict: {}. ".format(
-                        ", ".join('"{}"'.format(k) for k in missing_keys)
-                    ),
+                    "Missing key(s) in state_dict: {}. ".format(", ".join(
+                        '"{}"'.format(k) for k in missing_keys)),
                 )
 
             if len(error_msgs) > 0:
                 raise RuntimeError(
                     "Error(s) in loading state_dict for {}:\n\t{}".format(
-                        self.__class__.__name__, "\n\t".join(error_msgs)
-                    )
-                )
+                        self.__class__.__name__, "\n\t".join(error_msgs)))
         return _IncompatibleKeys(missing_keys, unexpected_keys)

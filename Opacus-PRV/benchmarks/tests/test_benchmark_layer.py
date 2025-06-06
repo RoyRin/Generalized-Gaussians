@@ -26,6 +26,7 @@ from benchmarks.utils import reset_peak_memory_stats
 
 
 class FakeModule(nn.Module):
+
     def __init__(self, **kwargs):
         super().__init__()
         self._runtime = kwargs.get("runtime", 0)
@@ -56,7 +57,8 @@ class FakeLayer(Layer):
         time.sleep(self._runtime)
         tensor = get_n_byte_tensor(
             self._pass_memory,
-            device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
+            device=torch.device(
+                "cuda:0" if torch.cuda.is_available() else "cpu"),
         )
         return tensor
 
@@ -69,9 +71,8 @@ class FakeLayer(Layer):
 @pytest.mark.parametrize("duration", [0, 0.005, 0.01, 0.05])
 @pytest.mark.parametrize("num_repeats", [10, 20, 50])
 @pytest.mark.parametrize("forward_only", [False, True])
-def test_runtime_benchmark(
-    duration: float, num_repeats: int, forward_only: bool
-) -> None:
+def test_runtime_benchmark(duration: float, num_repeats: int,
+                           forward_only: bool) -> None:
     """Tests runtime benchmarks on a dummy layer.
 
     Args:
@@ -97,9 +98,8 @@ def test_runtime_benchmark(
 @pytest.mark.parametrize("layer_bytes", [0, 1, 256, 1024, 2000])
 @pytest.mark.parametrize("num_repeats", [10, 20, 50, 100])
 @pytest.mark.parametrize("forward_only", [False, True])
-def test_memory_benchmark(
-    pass_bytes: int, layer_bytes: int, num_repeats: int, forward_only: bool
-) -> None:
+def test_memory_benchmark(pass_bytes: int, layer_bytes: int, num_repeats: int,
+                          forward_only: bool) -> None:
     """Tests CUDA memory benchmarks on a dummy layer.
 
     Args:
@@ -125,10 +125,8 @@ def test_memory_benchmark(
     )
 
     assert memory_stats["layer"] == true_layer_memory
-    assert (
-        memory_stats["max_memory"]
-        == true_layer_memory + (2 - forward_only) * true_pass_memory
-    )
+    assert (memory_stats["max_memory"] == true_layer_memory +
+            (2 - forward_only) * true_pass_memory)
 
     # reset memory stats and ensure there is no memory leakage
     assert reset_peak_memory_stats(device).cur_mem == 0
@@ -139,9 +137,8 @@ def test_memory_benchmark(
 @pytest.mark.parametrize("layer_bytes", [0, 1, 256, 1024, 2000])
 @pytest.mark.parametrize("num_repeats", [10, 20, 50, 100])
 @pytest.mark.parametrize("forward_only", [False, True])
-def test_memory_benchmark_strict(
-    pass_bytes: int, layer_bytes: int, num_repeats: int, forward_only: bool
-) -> None:
+def test_memory_benchmark_strict(pass_bytes: int, layer_bytes: int,
+                                 num_repeats: int, forward_only: bool) -> None:
     """Tests CUDA memory benchmarks on a dummy layer by predicting each measurement
     using the CUDA memory block size.
 
@@ -179,9 +176,9 @@ def test_memory_benchmark_strict(
     )
     assert memory_stats["layer"] == num_blocks_layer * BLOCK_SIZE
     assert (
-        memory_stats["max_memory"]
-        == (num_blocks_layer + (2 - forward_only) * num_blocks_pass) * BLOCK_SIZE
-    )
+        memory_stats["max_memory"] == (num_blocks_layer +
+                                       (2 - forward_only) * num_blocks_pass) *
+        BLOCK_SIZE)
 
     # reset memory stats and ensure there is no memory leakage
     assert reset_peak_memory_stats(device).cur_mem == 0

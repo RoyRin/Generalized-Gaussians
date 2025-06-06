@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from typing import Dict, List
 
 import torch
@@ -26,8 +25,8 @@ from .utils import register_grad_sampler
 
 @register_grad_sampler(RNNLinear)
 def compute_rnn_linear_grad_sample(
-    layer: RNNLinear, activations: List[torch.Tensor], backprops: torch.Tensor
-) -> Dict[nn.Parameter, torch.Tensor]:
+        layer: RNNLinear, activations: List[torch.Tensor],
+        backprops: torch.Tensor) -> Dict[nn.Parameter, torch.Tensor]:
     """
     Computes per sample gradients for ``RNNLinear`` layer. The RNN-like (DPLSTM, DPGRU) models
     are written using this layer as its building block.

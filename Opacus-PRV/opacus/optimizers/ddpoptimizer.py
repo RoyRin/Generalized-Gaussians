@@ -63,13 +63,15 @@ class DistributedDPOptimizer(DPOptimizer):
         for p in self.params:
             if not p.requires_grad:
                 continue
-            torch.distributed.all_reduce(p.grad, op=torch.distributed.ReduceOp.SUM)
+            torch.distributed.all_reduce(p.grad,
+                                         op=torch.distributed.ReduceOp.SUM)
             if self.loss_reduction == "mean":
                 p.grad /= self.world_size
 
     def step(
-        self, closure: Optional[Callable[[], float]] = None
-    ) -> Optional[torch.Tensor]:
+        self,
+        closure: Optional[Callable[[],
+                                   float]] = None) -> Optional[torch.Tensor]:
         if self.pre_step():
             self.reduce_gradients()
             return self.original_optimizer.step(closure)

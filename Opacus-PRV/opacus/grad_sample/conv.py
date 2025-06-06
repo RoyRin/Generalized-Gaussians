@@ -166,15 +166,11 @@ def convolution2d_backward_as_a_convolution(
         groups=batch_size * layer.groups,
     )
     weight_grad_sample = weight_grad_sample.view(
-        input_size // layer.groups,
-        batch_size,
-        output_size,
-        *weight_grad_sample.shape[-2:]
-    )  # (I / G, B, O, H, W)
+        input_size // layer.groups, batch_size, output_size,
+        *weight_grad_sample.shape[-2:])  # (I / G, B, O, H, W)
     weight_grad_sample = weight_grad_sample.movedim(0, 2)  # (B, O, I/G, H, W)
-    weight_grad_sample = weight_grad_sample[
-        :, :, :, : layer.weight.shape[2], : layer.weight.shape[3]
-    ]
+    weight_grad_sample = weight_grad_sample[:, :, :, :layer.weight.
+                                            shape[2], :layer.weight.shape[3]]
 
     ret = {layer.weight: weight_grad_sample}
     if layer.bias is not None:

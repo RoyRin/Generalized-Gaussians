@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Command-line script for computing privacy of a model trained with DP-SGD.
 The script applies the RDP accountant to estimate privacy budget of an iterated
@@ -75,20 +74,16 @@ def _apply_dp_sgd_analysis(
     eps, opt_alpha = get_privacy_spent(alphas, rdp, delta=delta)
 
     if verbose:
-        print(
-            f"DP-SGD with\n\tsampling rate = {100 * sample_rate:.3g}%,"
-            f"\n\tnoise_multiplier = {noise_multiplier},"
-            f"\n\titerated over {steps} steps,\nsatisfies "
-            f"differential privacy with\n\tepsilon = {eps:.3g},"
-            f"\n\tdelta = {delta}."
-            f"\nThe optimal alpha is {opt_alpha}."
-        )
+        print(f"DP-SGD with\n\tsampling rate = {100 * sample_rate:.3g}%,"
+              f"\n\tnoise_multiplier = {noise_multiplier},"
+              f"\n\titerated over {steps} steps,\nsatisfies "
+              f"differential privacy with\n\tepsilon = {eps:.3g},"
+              f"\n\tdelta = {delta}."
+              f"\nThe optimal alpha is {opt_alpha}.")
 
         if opt_alpha == max(alphas) or opt_alpha == min(alphas):
-            print(
-                "The privacy estimate is likely to be improved by expanding "
-                "the set of alpha orders."
-            )
+            print("The privacy estimate is likely to be improved by expanding "
+                  "the set of alpha orders.")
     return eps, opt_alpha
 
 
@@ -139,14 +134,16 @@ def compute_dp_sgd_privacy(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Estimate privacy of a model trained with DP-SGD using RDP accountant",
+        description=
+        "Estimate privacy of a model trained with DP-SGD using RDP accountant",
     )
     parser.add_argument(
         "-r",
         "--sample-rate",
         type=float,
         required=True,
-        help="Input sample rate (probability of each sample from the dataset to be selected for a next batch)",
+        help=
+        "Input sample rate (probability of each sample from the dataset to be selected for a next batch)",
     )
     parser.add_argument(
         "-n",
@@ -162,9 +159,11 @@ def main():
         required=True,
         help="Number of epochs to train",
     )
-    parser.add_argument(
-        "-d", "--delta", type=float, default=1e-5, help="Targeted delta (default: 1e-5)"
-    )
+    parser.add_argument("-d",
+                        "--delta",
+                        type=float,
+                        default=1e-5,
+                        help="Targeted delta (default: 1e-5)")
     parser.add_argument(
         "-a",
         "--alphas",

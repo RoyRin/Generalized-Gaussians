@@ -22,6 +22,7 @@ from .common import GradSampleHooks_test
 
 
 class Embedding_bag_test(GradSampleHooks_test):
+
     @given(
         N=st.integers(4, 8),
         sz=st.integers(3, 7),
@@ -40,8 +41,9 @@ class Embedding_bag_test(GradSampleHooks_test):
     ):
         emb = nn.EmbeddingBag(num_embeddings=V, embedding_dim=D, mode=mode)
 
-        sizes = torch.randint(low=1, high=sz + 1, size=(N,))
-        offsets = torch.LongTensor([0] + torch.cumsum(sizes, dim=0).tolist()[:-1])
+        sizes = torch.randint(low=1, high=sz + 1, size=(N, ))
+        offsets = torch.LongTensor([0] +
+                                   torch.cumsum(sizes, dim=0).tolist()[:-1])
         input = []
         for size in sizes:
             input += [torch.randperm(V)[:size]]
@@ -57,6 +59,7 @@ class Embedding_bag_test(GradSampleHooks_test):
                     next_offset = len(input)
                 yield (input[offset:next_offset], torch.LongTensor([0]))
 
-        self.run_test(
-            (input, offsets), emb, chunk_method=chunk_method, ew_compatible=False
-        )
+        self.run_test((input, offsets),
+                      emb,
+                      chunk_method=chunk_method,
+                      ew_compatible=False)

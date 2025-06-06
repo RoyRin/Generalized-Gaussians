@@ -17,13 +17,12 @@ from typing import Optional
 import pytest
 import torch
 
-
-skipifnocuda = pytest.mark.skipif(
-    not torch.cuda.is_available(), reason="Requires CUDA."
-)
+skipifnocuda = pytest.mark.skipif(not torch.cuda.is_available(),
+                                  reason="Requires CUDA.")
 
 
-def get_n_byte_tensor(n: int, device: Optional[torch.device] = None) -> torch.Tensor:
+def get_n_byte_tensor(n: int,
+                      device: Optional[torch.device] = None) -> torch.Tensor:
     """Returns a torch.int8 tensor of size n.
 
     Args:

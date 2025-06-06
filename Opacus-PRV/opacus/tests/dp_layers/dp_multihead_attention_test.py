@@ -46,6 +46,7 @@ def attn_train_fn(
 
 
 class DPMultiheadAttention_test(DPModules_test):
+
     @given(
         batch_size=st.integers(1, 5),
         src_seq_len=st.integers(1, 6),
@@ -96,12 +97,10 @@ class DPMultiheadAttention_test(DPModules_test):
         dp_attn.load_state_dict(attn.state_dict())
 
         q = torch.randn(tgt_seq_len, batch_size, embed_dim)
-        k = torch.randn(
-            src_seq_len, batch_size, kdim if kdim is not None else embed_dim
-        )
-        v = torch.randn(
-            src_seq_len, batch_size, vdim if vdim is not None else embed_dim
-        )
+        k = torch.randn(src_seq_len, batch_size,
+                        kdim if kdim is not None else embed_dim)
+        v = torch.randn(src_seq_len, batch_size,
+                        vdim if vdim is not None else embed_dim)
 
         self.compare_forward_outputs(
             attn,
@@ -181,12 +180,10 @@ class DPMultiheadAttention_test(DPModules_test):
         attn.load_state_dict(dp_attn.state_dict())
 
         q = torch.randn(tgt_seq_len, batch_size, embed_dim)
-        k = torch.randn(
-            src_seq_len, batch_size, kdim if kdim is not None else embed_dim
-        )
-        v = torch.randn(
-            src_seq_len, batch_size, vdim if vdim is not None else embed_dim
-        )
+        k = torch.randn(src_seq_len, batch_size,
+                        kdim if kdim is not None else embed_dim)
+        v = torch.randn(src_seq_len, batch_size,
+                        vdim if vdim is not None else embed_dim)
 
         self.compare_forward_outputs(
             attn,

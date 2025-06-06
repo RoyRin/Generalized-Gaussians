@@ -8,7 +8,6 @@ from scipy.special import erfc
 from ..rdp import _compute_rdp
 from .domain import Domain
 
-
 SQRT2 = np.sqrt(2)
 
 
@@ -32,14 +31,10 @@ class PoissonSubsampledGaussianPRV:
 
         return np.where(
             t > np.log(1 - q),
-            sigma
-            * np.exp(-(sigma**2) * z**2 / 2 - 1 / (8 * sigma**2) + 2 * t)
-            / (
-                SQRT2
-                * np.sqrt(np.pi)
-                * (np.exp(t) + q - 1)
-                * ((np.exp(t) + q - 1) / q) ** 0.5
-            ),
+            sigma * np.exp(-(sigma**2) * z**2 / 2 - 1 /
+                           (8 * sigma**2) + 2 * t) /
+            (SQRT2 * np.sqrt(np.pi) * (np.exp(t) + q - 1) *
+             ((np.exp(t) + q - 1) / q)**0.5),
             0.0,
         )
 
@@ -51,9 +46,9 @@ class PoissonSubsampledGaussianPRV:
 
         return np.where(
             t > np.log(1 - q),
-            -q * erfc((2 * z * sigma**2 - 1) / (2 * SQRT2 * sigma)) / 2
-            - (1 - q) * erfc((2 * z * sigma**2 + 1) / (2 * SQRT2 * sigma)) / 2
-            + 1.0,
+            -q * erfc((2 * z * sigma**2 - 1) / (2 * SQRT2 * sigma)) / 2 -
+            (1 - q) * erfc(
+                (2 * z * sigma**2 + 1) / (2 * SQRT2 * sigma)) / 2 + 1.0,
             0.0,
         )
 
@@ -64,9 +59,9 @@ class PoissonSubsampledGaussianPRV:
 # though we have only implemented the PoissonSubsampledGaussianPRV, this truncated prv
 # class is generic, and would work with PRVs corresponding to different mechanisms
 class TruncatedPrivacyRandomVariable:
-    def __init__(
-        self, prv: PoissonSubsampledGaussianPRV, t_min: float, t_max: float
-    ) -> None:
+
+    def __init__(self, prv: PoissonSubsampledGaussianPRV, t_min: float,
+                 t_max: float) -> None:
         self._prv = prv
         self.t_min = t_min
         self.t_max = t_max
@@ -76,7 +71,8 @@ class TruncatedPrivacyRandomVariable:
         return np.where(
             t < self.t_min,
             0.0,
-            np.where(t < self.t_max, self._prv.pdf(t) / self._remaining_mass, 0.0),
+            np.where(t < self.t_max,
+                     self._prv.pdf(t) / self._remaining_mass, 0.0),
         )
 
     def cdf(self, t):
@@ -85,7 +81,8 @@ class TruncatedPrivacyRandomVariable:
             0.0,
             np.where(
                 t < self.t_max,
-                (self._prv.cdf(t) - self._prv.cdf(self.t_min)) / self._remaining_mass,
+                (self._prv.cdf(t) - self._prv.cdf(self.t_min)) /
+                self._remaining_mass,
                 1.0,
             ),
         )
@@ -94,14 +91,12 @@ class TruncatedPrivacyRandomVariable:
         """
         Calculate the mean using numerical integration.
         """
-        points = np.concatenate(
-            [
-                [self.t_min],
-                -np.logspace(-5, -1, 5)[::-1],
-                np.logspace(-5, -1, 5),
-                [self.t_max],
-            ]
-        )
+        points = np.concatenate([
+            [self.t_min],
+            -np.logspace(-5, -1, 5)[::-1],
+            np.logspace(-5, -1, 5),
+            [self.t_max],
+        ])
 
         mean = 0.0
         for left, right in zip(points[:-1], points[1:]):
@@ -121,17 +116,16 @@ class DiscretePRV:
             raise ValueError("pmf and domain must have the same length")
         return len(self.pmf)
 
-    def compute_epsilon(
-        self, delta: float, delta_error: float, eps_error: float
-    ) -> Tuple[float, float, float]:
+    def compute_epsilon(self, delta: float, delta_error: float,
+                        eps_error: float) -> Tuple[float, float, float]:
         if delta <= 0:
-            return (float("inf"),) * 3
+            return (float("inf"), ) * 3
 
-        if np.finfo(np.longdouble).eps * self.domain.size > delta - delta_error:
+        if np.finfo(
+                np.longdouble).eps * self.domain.size > delta - delta_error:
             raise ValueError(
                 "Floating point errors will dominate for such small values of delta. "
-                "Increase delta or reduce domain size."
-            )
+                "Increase delta or reduce domain size.")
 
         t = self.domain.ts
         p = self.pmf
@@ -170,7 +164,8 @@ def discretize(prv, domain: Domain) -> DiscretePRV:
     mean_shift = mean_c - mean_d
 
     if np.abs(mean_shift) >= domain.dt / 2:
-        raise RuntimeError("Discrete mean differs significantly from continuous mean.")
+        raise RuntimeError(
+            "Discrete mean differs significantly from continuous mean.")
 
     domain_shifted = domain.shift_right(mean_shift)
 

@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Runs MNIST training with differential privacy.
 
@@ -29,13 +28,13 @@ from opacus import PrivacyEngine
 from torchvision import datasets, transforms
 from tqdm import tqdm
 
-
 # Precomputed characteristics of the MNIST dataset
 MNIST_MEAN = 0.1307
 MNIST_STD = 0.3081
 
 
 class SampleConvNet(nn.Module):
+
     def __init__(self):
         super().__init__()
         self.conv1 = nn.Conv2d(1, 16, 8, 2, padding=3)
@@ -73,11 +72,9 @@ def train(args, model, device, train_loader, optimizer, privacy_engine, epoch):
 
     if not args.disable_dp:
         epsilon = privacy_engine.accountant.get_epsilon(delta=args.delta)
-        print(
-            f"Train Epoch: {epoch} \t"
-            f"Loss: {np.mean(losses):.6f} "
-            f"(ε = {epsilon:.2f}, δ = {args.delta})"
-        )
+        print(f"Train Epoch: {epoch} \t"
+              f"Loss: {np.mean(losses):.6f} "
+              f"(ε = {epsilon:.2f}, δ = {args.delta})")
     else:
         print(f"Train Epoch: {epoch} \t Loss: {np.mean(losses):.6f}")
 
@@ -93,8 +90,8 @@ def test(model, device, test_loader):
             output = model(data)
             test_loss += criterion(output, target).item()  # sum up batch loss
             pred = output.argmax(
-                dim=1, keepdim=True
-            )  # get the index of the max log-probability
+                dim=1,
+                keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader.dataset)
@@ -105,8 +102,7 @@ def test(model, device, test_loader):
             correct,
             len(test_loader.dataset),
             100.0 * correct / len(test_loader.dataset),
-        )
-    )
+        ))
     return correct / len(test_loader.dataset)
 
 
@@ -198,7 +194,8 @@ def main():
         "--secure-rng",
         action="store_true",
         default=False,
-        help="Enable Secure RNG to have trustworthy privacy guarantees. Comes at a performance cost",
+        help=
+        "Enable Secure RNG to have trustworthy privacy guarantees. Comes at a performance cost",
     )
     parser.add_argument(
         "--data-root",
@@ -214,12 +211,10 @@ def main():
             args.data_root,
             train=True,
             download=True,
-            transform=transforms.Compose(
-                [
-                    transforms.ToTensor(),
-                    transforms.Normalize((MNIST_MEAN,), (MNIST_STD,)),
-                ]
-            ),
+            transform=transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((MNIST_MEAN, ), (MNIST_STD, )),
+            ]),
         ),
         batch_size=args.batch_size,
         num_workers=0,
@@ -229,12 +224,10 @@ def main():
         datasets.MNIST(
             args.data_root,
             train=False,
-            transform=transforms.Compose(
-                [
-                    transforms.ToTensor(),
-                    transforms.Normalize((MNIST_MEAN,), (MNIST_STD,)),
-                ]
-            ),
+            transform=transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((MNIST_MEAN, ), (MNIST_STD, )),
+            ]),
         ),
         batch_size=args.test_batch_size,
         shuffle=True,
@@ -259,20 +252,19 @@ def main():
             )
 
         for epoch in range(1, args.epochs + 1):
-            train(args, model, device, train_loader, optimizer, privacy_engine, epoch)
+            train(args, model, device, train_loader, optimizer, privacy_engine,
+                  epoch)
         run_results.append(test(model, device, test_loader))
 
     if len(run_results) > 1:
-        print(
-            "Accuracy averaged over {} runs: {:.2f}% ± {:.2f}%".format(
-                len(run_results), np.mean(run_results) * 100, np.std(run_results) * 100
-            )
-        )
+        print("Accuracy averaged over {} runs: {:.2f}% ± {:.2f}%".format(
+            len(run_results),
+            np.mean(run_results) * 100,
+            np.std(run_results) * 100))
 
     repro_str = (
         f"mnist_{args.lr}_{args.sigma}_"
-        f"{args.max_per_sample_grad_norm}_{args.batch_size}_{args.epochs}"
-    )
+        f"{args.max_per_sample_grad_norm}_{args.batch_size}_{args.epochs}")
     torch.save(run_results, f"run_results_{repro_str}.pt")
 
     if args.save_model:

@@ -22,6 +22,7 @@ from .common import GradSampleHooks_test
 
 
 class InstanceNorm3d_test(GradSampleHooks_test):
+
     @given(
         N=st.integers(1, 4),
         C=st.integers(1, 3),
@@ -32,5 +33,7 @@ class InstanceNorm3d_test(GradSampleHooks_test):
     @settings(deadline=10000)
     def test_5d_input(self, N: int, C: int, W: int, H: int, Z: int):
         x = torch.randn([N, C, Z, H, W])
-        norm = nn.InstanceNorm3d(num_features=C, affine=True, track_running_stats=False)
+        norm = nn.InstanceNorm3d(num_features=C,
+                                 affine=True,
+                                 track_running_stats=False)
         self.run_test(x, norm, batch_first=True)

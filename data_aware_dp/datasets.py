@@ -16,18 +16,16 @@ def get_LR_train_and_test_data(n_samples=10000,
     train_samples = int(n_samples * train_percentage)
     test_samples = int(n_samples * train_percentage)
 
-    X_train, Y_train = make_regression(
-        n_samples=train_samples,
-        n_features=input_dim,
-        n_informative=input_dim,
-        bias=0,
-        noise=noise)
-    X_test, Y_test = make_regression(
-        n_samples=test_samples,
-        n_features=input_dim,
-        n_informative=input_dim,
-        bias=0,
-        noise=test_noise)
+    X_train, Y_train = make_regression(n_samples=train_samples,
+                                       n_features=input_dim,
+                                       n_informative=input_dim,
+                                       bias=0,
+                                       noise=noise)
+    X_test, Y_test = make_regression(n_samples=test_samples,
+                                     n_features=input_dim,
+                                     n_informative=input_dim,
+                                     bias=0,
+                                     noise=test_noise)
 
     #X_train = X[:int(n_samples * train_percentage)]
     #Y_train = Y[:int(n_samples * train_percentage)]

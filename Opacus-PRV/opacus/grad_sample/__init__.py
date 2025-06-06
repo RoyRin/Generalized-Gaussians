@@ -26,7 +26,6 @@ from .layer_norm import compute_layer_norm_grad_sample  # noqa
 from .linear import compute_linear_grad_sample  # noqa
 from .utils import get_gsm_class, register_grad_sampler, wrap_model
 
-
 __all__ = [
     "GradSampleModule",
     "GradSampleModuleExpandedWeights",

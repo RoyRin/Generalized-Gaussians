@@ -6,9 +6,6 @@ authors = ["Roy Rinberg <royrinberg@gmail.com>"]
 readme = "README.md"
 packages = [{include = "data_aware_dp"}]
 
-[tool.poetry.scripts]
-dadp-ml-training = "data_aware_dp.train_ml_cli:cli"
-
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.10"
@@ -38,17 +35,8 @@ yapf = "^0.32.0"
 jupyter = "^1.0.0"
 bpython = "^0.23"
 
-# jax_privacy= { path = "jax_privacy/",develop = true}
-# jaxlib = {url = "https://storage.googleapis.com/jax-releases/cuda11/jaxlib-0.1.73+cuda11.cudnn805-cp39-none-manylinux2010_x86_64.whl"}
-# jaxline= {git = "https://github.com/deepmind/jaxline.git", branch = "master"}
-
-#jax="0.3.23"
-# opacus needs to be installed from DADP version
-
-#opacus= { path = "opacus/",develop = true}
 opacus = {path = "Opacus-PRV/", develop = true}
 
-#jax = "0.3.23"
 ipywidgets = "^7.0.0"
 mpmath = "^1.2.1"
 sympy = "^1.11.1"

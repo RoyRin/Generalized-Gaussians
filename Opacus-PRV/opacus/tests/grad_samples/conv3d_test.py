@@ -24,6 +24,7 @@ from .common import GradSampleHooks_test, expander, shrinker
 
 
 class Conv3d_test(GradSampleHooks_test):
+
     @given(
         N=st.integers(0, 4),
         C=st.sampled_from([1, 3, 32]),
@@ -56,7 +57,7 @@ class Conv3d_test(GradSampleHooks_test):
             return
         out_channels = out_channels_mapper(C)
         if (
-            C % groups != 0 or out_channels % groups != 0
+                C % groups != 0 or out_channels % groups != 0
         ):  # since in_channels and out_channels must be divisible by groups
             return
         x = torch.randn([N, C, D, H, W])
@@ -69,9 +70,8 @@ class Conv3d_test(GradSampleHooks_test):
             dilation=dilation,
             groups=groups,
         )
-        is_ew_compatible = (
-            dilation == 1 and padding != "same" and N > 0
-        )  # TODO add support for padding = 'same' with EW
+        is_ew_compatible = (dilation == 1 and padding != "same" and N > 0
+                            )  # TODO add support for padding = 'same' with EW
         self.run_test(
             x,
             conv,

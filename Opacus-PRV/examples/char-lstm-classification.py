@@ -26,7 +26,6 @@ from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-
 parser = argparse.ArgumentParser(
     description="PyTorch Name language classification DP Training",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -57,13 +56,18 @@ parser.add_argument(
     choices=["lstm", "gru", "rnn"],
     help="recursive network type",
 )
-parser.add_argument(
-    "--embedding-size", default=64, type=int, help="Character embedding dimension"
-)
-parser.add_argument(
-    "--hidden-size", default=128, type=int, help="hidden state dimensions"
-)
-parser.add_argument("--n-layers", default=1, type=int, help="How many layers to use")
+parser.add_argument("--embedding-size",
+                    default=64,
+                    type=int,
+                    help="Character embedding dimension")
+parser.add_argument("--hidden-size",
+                    default=128,
+                    type=int,
+                    help="hidden state dimensions")
+parser.add_argument("--n-layers",
+                    default=1,
+                    type=int,
+                    help="How many layers to use")
 parser.add_argument(
     "--test-every",
     default=0,
@@ -83,7 +87,10 @@ parser.add_argument(
     metavar="LR",
     help="initial learning rate",
 )
-parser.add_argument("--epochs", type=int, default=10, help="Number of training epochs")
+parser.add_argument("--epochs",
+                    type=int,
+                    default=10,
+                    help="Number of training epochs")
 parser.add_argument(
     "--train-split",
     type=float,
@@ -115,7 +122,8 @@ parser.add_argument(
     "--secure-rng",
     action="store_true",
     default=False,
-    help="Enable Secure RNG to have trustworthy privacy guarantees. Comes at a performance cost",
+    help=
+    "Enable Secure RNG to have trustworthy privacy guarantees. Comes at a performance cost",
 )
 parser.add_argument(
     "--delta",
@@ -169,12 +177,9 @@ class CharByteEncoder(nn.Module):
         """
         encoded = s.encode()
         n_pad = pad_to - len(encoded) if pad_to > len(encoded) else 0
-        return torch.LongTensor(
-            [self.start_idx]
-            + [c for c in encoded]  # noqa
-            + [self.end_idx]
-            + [self.pad_idx for _ in range(n_pad)]
-        )
+        return torch.LongTensor([self.start_idx] + [c for c in encoded]  # noqa
+                                + [self.end_idx] +
+                                [self.pad_idx for _ in range(n_pad)])
 
     def decode(self, char_ids_tensor: torch.LongTensor) -> str:
         """
@@ -214,6 +219,7 @@ class CharByteEncoder(nn.Module):
 
 
 class NamesDataset(Dataset):
+
     def __init__(self, root):
         self.root = Path(root)
 
@@ -235,9 +241,8 @@ class NamesDataset(Dataset):
             label_id = self.labels_dict[label_name]
             with open(langfile, "r") as fin:
                 for row in fin:
-                    samples.append(
-                        (self.encoder(row.strip()), torch.tensor(label_id).long())
-                    )
+                    samples.append((self.encoder(row.strip()),
+                                    torch.tensor(label_id).long()))
         return samples
 
     def label_count(self):
@@ -252,6 +257,7 @@ VOCAB_SIZE = 256 + 3  # 256 alternatives in one byte, plus 3 special characters.
 
 
 class CharNNClassifier(nn.Module):
+
     def __init__(
         self,
         rnn_type,
@@ -288,9 +294,9 @@ class CharNNClassifier(nn.Module):
 
 
 def padded_collate(batch, padding_idx=0):
-    x = pad_sequence(
-        [elem[0] for elem in batch], batch_first=True, padding_value=padding_idx
-    )
+    x = pad_sequence([elem[0] for elem in batch],
+                     batch_first=True,
+                     padding_value=padding_idx)
     y = torch.stack([elem[1] for elem in batch]).long()
 
     return x, y
@@ -387,9 +393,9 @@ def main():
     else:
         generator = None
 
-    train_ds, test_ds = torch.utils.data.random_split(
-        ds, [train_len, test_len], generator=generator
-    )
+    train_ds, test_ds = torch.utils.data.random_split(ds,
+                                                      [train_len, test_len],
+                                                      generator=generator)
 
     if args.mode == "rnn":
         rnn_type = DPRNN
@@ -410,9 +416,9 @@ def main():
     )
     model = model.to(device)
 
-    train_ds, test_ds = torch.utils.data.random_split(
-        ds, [train_len, test_len], generator=generator
-    )
+    train_ds, test_ds = torch.utils.data.random_split(ds,
+                                                      [train_len, test_len],
+                                                      generator=generator)
 
     train_loader = DataLoader(
         train_ds,
@@ -460,9 +466,17 @@ def main():
         )
         if args.test_every:
             if epoch % args.test_every == 0:
-                test(model, test_loader, privacy_engine, args.delta, device=device)
+                test(model,
+                     test_loader,
+                     privacy_engine,
+                     args.delta,
+                     device=device)
 
-    mean_acc = test(model, test_loader, privacy_engine, args.delta, device=device)
+    mean_acc = test(model,
+                    test_loader,
+                    privacy_engine,
+                    args.delta,
+                    device=device)
     torch.save(mean_acc, f"run_results_chr_{args.mode}_classification.pt")
 
 

@@ -23,6 +23,7 @@ from opacus.validators.module_validator import ModuleValidator
 
 
 class MultiheadAttentionValidator_test(unittest.TestCase):
+
     def setUp(self):
         self.mha = nn.MultiheadAttention(8, 4)
         self.mv = ModuleValidator.VALIDATORS
@@ -37,5 +38,4 @@ class MultiheadAttentionValidator_test(unittest.TestCase):
         fix_mha = self.mf[type(self.mha)](self.mha)
         self.assertTrue(isinstance(fix_mha, DPMultiheadAttention))
         self.assertTrue(
-            are_state_dict_equal(self.mha.state_dict(), fix_mha.state_dict())
-        )
+            are_state_dict_equal(self.mha.state_dict(), fix_mha.state_dict()))

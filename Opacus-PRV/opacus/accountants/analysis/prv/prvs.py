@@ -39,18 +39,16 @@ def sigma_to_scale(sigma):
 def cdf_prv_f__sampling(mu,
                         beta,
                         scale,
-                        dimension = 1,
+                        dimension=1,
                         N=100000,
                         bin_count=10000,
-                        samples = None,
+                        samples=None,
                         tolerance=1e-5):
     """ realization ! : if you set density = true, and then you aren't over the whole range, it wil renormalize such that the area under the curve is 1.
 
 
     """
     # #scale = sigma_to_scale(sigma)
-
-
 
     #
     # TODO :
@@ -62,17 +60,17 @@ def cdf_prv_f__sampling(mu,
     #
     if samples is None:
         sampler = sampling.beta_exponential_sampler_from_scale(beta=beta,
-                                                           scale=scale)
+                                                               scale=scale)
         samples = []
         if dimension != 1:
             for _ in range(N):
-                samples.append(np.linalg.norm(sampler(dimension), ord = 1))
+                samples.append(np.linalg.norm(sampler(dimension), ord=1))
             samples = np.array(samples)
         else:
             samples = sampler(N)
 
         Y = (np.power(np.abs(samples - mu), beta) -
-            np.power(np.abs(samples), beta)) / (scale**beta)  #* -1
+             np.power(np.abs(samples), beta)) / (scale**beta)  #* -1
         X = Y * -1
         tail_bound = 2 * get_tail_bound(beta, scale, tolerance=tolerance)
         print(f"tail_bound is {tail_bound}")
@@ -165,7 +163,7 @@ class PoissonSubsampledEPMPRV:
         tol=1e-30,
         N=N,
         bin_count=bin_count,
-        dimension =1,
+        dimension=1,
     ) -> None:
         self.sample_rate = sample_rate
         #if noise_multiplier < .6:
@@ -179,7 +177,13 @@ class PoissonSubsampledEPMPRV:
         print("scale (from PoissonSubsampledEPMPRV)", self.scale)
 
         self.X_cdf_function, self.Y_cdf_function = cdf_prv_f__sampling(
-            mu, beta, self.scale, N=N, bin_count=bin_count, tolerance=tol, dimension=dimension)
+            mu,
+            beta,
+            self.scale,
+            N=N,
+            bin_count=bin_count,
+            tolerance=tol,
+            dimension=dimension)
 
         self.mu = mu
 

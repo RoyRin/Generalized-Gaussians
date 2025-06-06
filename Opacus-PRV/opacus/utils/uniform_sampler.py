@@ -26,9 +26,12 @@ class UniformWithReplacementSampler(Sampler[List[int]]):
     The sampler generates ``steps`` number of batches, that defaults to 1/``sample_rate``.
     """
 
-    def __init__(
-        self, *, num_samples: int, sample_rate: float, generator=None, steps=None
-    ):
+    def __init__(self,
+                 *,
+                 num_samples: int,
+                 sample_rate: float,
+                 generator=None,
+                 steps=None):
         r"""
         Args:
             num_samples: number of samples to draw.
@@ -41,10 +44,9 @@ class UniformWithReplacementSampler(Sampler[List[int]]):
         self.generator = generator
 
         if self.num_samples <= 0:
-            raise ValueError(
-                "num_samples should be a positive integer "
-                "value, but got num_samples={}".format(self.num_samples)
-            )
+            raise ValueError("num_samples should be a positive integer "
+                             "value, but got num_samples={}".format(
+                                 self.num_samples))
 
         if steps is not None:
             self.steps = steps
@@ -57,10 +59,8 @@ class UniformWithReplacementSampler(Sampler[List[int]]):
     def __iter__(self):
         num_batches = self.steps
         while num_batches > 0:
-            mask = (
-                torch.rand(self.num_samples, generator=self.generator)
-                < self.sample_rate
-            )
+            mask = (torch.rand(self.num_samples, generator=self.generator)
+                    < self.sample_rate)
             indices = mask.nonzero(as_tuple=False).reshape(-1).tolist()
             yield indices
 
@@ -115,10 +115,9 @@ class DistributedUniformWithReplacementSampler(Sampler):
         self.shuffle_seed = shuffle_seed
 
         if self.total_size <= 0:
-            raise ValueError(
-                "total_size should be a positive integer "
-                "value, but got total_size={}".format(self.total_size)
-            )
+            raise ValueError("total_size should be a positive integer "
+                             "value, but got total_size={}".format(
+                                 self.total_size))
 
         # Size of the local dataset specific to the current replica
         self.num_samples = self.total_size // self.num_replicas
@@ -137,22 +136,21 @@ class DistributedUniformWithReplacementSampler(Sampler):
             # deterministically shuffle based on epoch and seed
             g = torch.Generator()
             g.manual_seed(self.shuffle_seed + self.epoch)
-            indices = torch.randperm(self.total_size, generator=g)  # type: ignore
+            indices = torch.randperm(self.total_size,
+                                     generator=g)  # type: ignore
         else:
             indices = torch.arange(self.total_size)  # type: ignore
 
         # Subset of the dataset assigned to this replica
         # NOTE: the first replicas might have 1 more sample.
         # (Different from the regular distributed loader that pads with more samples)
-        indices = indices[self.rank : self.total_size : self.num_replicas]
+        indices = indices[self.rank:self.total_size:self.num_replicas]
         assert len(indices) == self.num_samples
 
         # Now, select a batch with Poisson subsampling
         for _ in range(self.num_batches):
-            mask = (
-                torch.rand(self.num_samples, generator=self.generator)
-                < self.sample_rate
-            )
+            mask = (torch.rand(self.num_samples, generator=self.generator)
+                    < self.sample_rate)
             selected_examples = mask.nonzero(as_tuple=False).reshape(-1)
             if len(selected_examples) > 0:
                 yield indices[selected_examples]

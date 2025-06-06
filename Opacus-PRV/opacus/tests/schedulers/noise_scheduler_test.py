@@ -23,6 +23,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 
 class NoiseSchedulerTest(unittest.TestCase):
+
     def setUp(self):
         n_data, dim = 100, 10
         data = torch.randn(n_data, dim)
@@ -63,6 +64,7 @@ class NoiseSchedulerTest(unittest.TestCase):
         self.assertEqual(self.optimizer.noise_multiplier, gamma**2)
 
     def test_lambda_scheduler(self):
+
         def noise_lambda(epoch):
             return 1 - epoch / 10
 

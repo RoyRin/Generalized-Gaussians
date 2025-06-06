@@ -23,7 +23,6 @@ from opacus.validators.errors import (
     UnsupportedModuleError,
 )
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -37,9 +36,10 @@ class ModuleValidator:
     FIXERS = {}
 
     @classmethod
-    def validate(
-        cls, module: nn.Module, *, strict: bool = False
-    ) -> List[UnsupportedModuleError]:
+    def validate(cls,
+                 module: nn.Module,
+                 *,
+                 strict: bool = False) -> List[UnsupportedModuleError]:
         """
         Validate module and sub_modules by running registered custom validators.
         Returns or raises exceptions depending on ``strict`` flag.
@@ -56,13 +56,14 @@ class ModuleValidator:
         # 1. validate that module is in training mode
         if not module.training:
             errors.append(
-                IllegalModuleConfigurationError("Model needs to be in training mode")
-            )
+                IllegalModuleConfigurationError(
+                    "Model needs to be in training mode"))
         # 2. perform module specific validations for trainable modules.
         # TODO: use module name here - it's useful part of error message
         for _, sub_module in trainable_modules(module):
             if type(sub_module) in ModuleValidator.VALIDATORS:
-                sub_module_validator = ModuleValidator.VALIDATORS[type(sub_module)]
+                sub_module_validator = ModuleValidator.VALIDATORS[type(
+                    sub_module)]
                 errors.extend(sub_module_validator(sub_module))
         # raise/return as needed
         if strict and len(errors) > 0:
@@ -119,8 +120,7 @@ class ModuleValidator:
                 # log it
                 logger.info(
                     f"Replaced sub_module {sub_module_name} : {sub_module}"
-                    f" with {new_sub_module}"
-                )
+                    f" with {new_sub_module}")
         # return fixed module
         return module
 
@@ -133,9 +133,8 @@ class ModuleValidator:
         new_sub_module: nn.Module,
     ) -> None:
         sub_module_path = sub_module_name.split(".")
-        if (
-            len(sub_module_path) == 1 and sub_module_path[0] == ""
-        ):  # root is the only sub_module of root
+        if (len(sub_module_path) == 1 and sub_module_path[0]
+                == ""):  # root is the only sub_module of root
             return new_sub_module
         else:  # replace root's descendant
             sub_module_parent = root

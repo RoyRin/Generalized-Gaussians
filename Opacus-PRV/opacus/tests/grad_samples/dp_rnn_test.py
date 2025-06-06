@@ -22,7 +22,6 @@ from opacus.utils.packed_sequences import _gen_packed_data
 
 from .common import GradSampleHooks_test
 
-
 MODELS = [
     DPRNN,
     DPGRU,
@@ -47,6 +46,7 @@ class DPRNNAdapter(nn.Module):
 
 
 class RNN_test(GradSampleHooks_test):
+
     @given(
         model=st.one_of([st.just(model) for model in MODELS]),
         N=st.integers(1, 3),

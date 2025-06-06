@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from typing import Dict, List
 
 import torch
@@ -25,8 +24,8 @@ from .utils import register_grad_sampler
 
 @register_grad_sampler(SequenceBias)
 def compute_sequence_bias_grad_sample(
-    layer: SequenceBias, activations: List[torch.Tensor], backprops: torch.Tensor
-) -> Dict[nn.Parameter, torch.Tensor]:
+        layer: SequenceBias, activations: List[torch.Tensor],
+        backprops: torch.Tensor) -> Dict[nn.Parameter, torch.Tensor]:
     """
     Computes per sample gradients for ``SequenceBias`` layer
 

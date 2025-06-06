@@ -96,7 +96,8 @@ def evaluate_beta_exponential_on_histograms(histograms,
                                             trials=60,
                                             savepath=None,
                                             max_cpus=None,
-                                            verbose=True, should_multiprocessing = True):
+                                            verbose=True,
+                                            should_multiprocessing=True):
     """evaluate_beta_exponential_on_histogram
         this function evaluates the beta-exponential mechanism on a histogram
         (the main function that calls all others)
@@ -133,7 +134,7 @@ def evaluate_beta_exponential_on_histograms(histograms,
                 p.map(single_threaded_beta_computation,
                       beta_scales_hists_trials))
 
-                # flatten the list 
+            # flatten the list
         pts = list(itertools.chain(*pts))
 
     else:
@@ -185,15 +186,15 @@ def get_accuracies_for_rdp(df, rounding=0.1, rdp_range=[0, 10]):
 
 def get_laplace_accuracy_at_rdp(rdp_val, laplacian_acc, tol=0.01):
     try:
-        return laplacian_acc.loc[np.abs(
-            laplacian_acc['rdp'] - rdp_val < tol)].iloc[0]["accuracy"]
+        return laplacian_acc.loc[np.abs(laplacian_acc['rdp'] -
+                                        rdp_val < tol)].iloc[0]["accuracy"]
     except:
         return None
 
 
 def get_gaussian_accuracy_at_rdp(rdp_val, gaussian_acc, tol=0.01):
     try:
-        return gaussian_acc.loc[np.abs(
-            gaussian_acc['rdp'] - rdp_val < tol)].iloc[0]["accuracy"]
+        return gaussian_acc.loc[np.abs(gaussian_acc['rdp'] -
+                                       rdp_val < tol)].iloc[0]["accuracy"]
     except:
         return None

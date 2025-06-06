@@ -403,11 +403,11 @@ class DPOptimizer(Optimizer):
         Performs gradient clipping.
         Stores clipped and aggregated gradients into `p.summed_grad```
         """
-        empty_batch = False 
+        empty_batch = False
         if len(self.grad_samples[0]) == 0:
             # Empty batch
             per_sample_clip_factor = torch.zeros((0, ))
-            empty_batch = True 
+            empty_batch = True
         else:
             per_param_norms = [
                 g.reshape(len(g), -1).norm(2, dim=-1)
@@ -418,7 +418,6 @@ class DPOptimizer(Optimizer):
             per_sample_clip_factor = (self.max_grad_norm /
                                       (per_sample_norms + 1e-6)).clamp(max=1.0)
 
-
         for p in self.params:
 
             _check_processed_flag(p.grad_sample)
@@ -428,7 +427,8 @@ class DPOptimizer(Optimizer):
                 #
                 ## added by roy - because of device issues
                 # (may have huge overhead)
-                per_sample_clip_factor = per_sample_clip_factor.to(grad_sample.device)
+                per_sample_clip_factor = per_sample_clip_factor.to(
+                    grad_sample.device)
             grad = contract("i,i...", per_sample_clip_factor, grad_sample)
 
             if p.summed_grad is not None:
@@ -445,7 +445,7 @@ class DPOptimizer(Optimizer):
 
         for p in self.params:
             _check_processed_flag(p.summed_grad)
-            
+
             # this is where DSDP noise is added
             if self.beta_sampler is not None:
                 # add to device
@@ -453,8 +453,8 @@ class DPOptimizer(Optimizer):
                 # noise = self.beta_sampler(size=p.summed_grad.shape)
                 # make sure sampler is adding noise on torch device
                 noise = self.beta_sampler(shape=p.summed_grad.shape)
-                # POTENTIAL HACK - because noise looks like [64, 3,7, 7,7 1] instead of [64, 3,7, 7,7] 
-     
+                # POTENTIAL HACK - because noise looks like [64, 3,7, 7,7 1] instead of [64, 3,7, 7,7]
+
                 noise = torch.flatten(noise, start_dim=-2)
                 # noise = torch.from_numpy(noise).to(device=p.summed_grad.device)
                 # convert to same type as p.summed_grad

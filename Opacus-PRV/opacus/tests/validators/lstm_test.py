@@ -23,6 +23,7 @@ from opacus.validators.module_validator import ModuleValidator
 
 
 class LSTMValidator_test(unittest.TestCase):
+
     def setUp(self):
         self.lstm = nn.LSTM(8, 4)
         self.mv = ModuleValidator.VALIDATORS
@@ -37,5 +38,5 @@ class LSTMValidator_test(unittest.TestCase):
         fix_lstm = self.mf[type(self.lstm)](self.lstm)
         self.assertTrue(isinstance(fix_lstm, DPLSTM))
         self.assertTrue(
-            are_state_dict_equal(self.lstm.state_dict(), fix_lstm.state_dict())
-        )
+            are_state_dict_equal(self.lstm.state_dict(),
+                                 fix_lstm.state_dict()))

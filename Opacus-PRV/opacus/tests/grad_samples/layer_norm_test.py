@@ -22,6 +22,7 @@ from .common import GradSampleHooks_test
 
 
 class LayerNorm_test(GradSampleHooks_test):
+
     @given(
         N=st.integers(1, 4),
         Z=st.integers(1, 4),
@@ -31,14 +32,12 @@ class LayerNorm_test(GradSampleHooks_test):
         norm_dim=st.integers(1, 3),
     )
     @settings(deadline=10000)
-    def test_input_norm(
-        self, N: int, Z: int, W: int, H: int, input_dim: int, norm_dim: int
-    ):
+    def test_input_norm(self, N: int, Z: int, W: int, H: int, input_dim: int,
+                        norm_dim: int):
         if norm_dim >= input_dim:
             return
         normalized_shape, x_shape = self.get_x_shape_and_norm_shape(
-            H, N, W, Z, input_dim, norm_dim
-        )
+            H, N, W, Z, input_dim, norm_dim)
 
         norm = nn.LayerNorm(normalized_shape, elementwise_affine=True)
         x = torch.randn(x_shape)

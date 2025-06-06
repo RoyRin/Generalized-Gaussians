@@ -16,7 +16,6 @@ from typing import Optional
 
 from opacus.accountants import create_accountant
 
-
 MAX_SIGMA = 1e6
 
 

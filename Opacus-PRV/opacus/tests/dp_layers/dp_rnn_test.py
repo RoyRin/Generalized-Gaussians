@@ -29,7 +29,8 @@ from .common import DPModules_test
 def rnn_train_fn(
     model: nn.Module,
     x: Union[torch.Tensor, PackedSequence],
-    state_init: Optional[Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]] = None,
+    state_init: Optional[Union[torch.Tensor, Tuple[torch.Tensor,
+                                                   torch.Tensor]]] = None,
 ):
     model.train()
     criterion = nn.MSELoss()
@@ -44,6 +45,7 @@ def rnn_train_fn(
 
 
 class DPLSTM_test(DPModules_test):
+
     @given(
         mode=st.one_of(st.just("rnn"), st.just("gru"), st.just("lstm")),
         batch_size=st.integers(1, 5),
@@ -109,21 +111,22 @@ class DPLSTM_test(DPModules_test):
         torch.use_deterministic_algorithms(False)
         if packed_input_flag == 0:
             # no packed sequence input
-            x = (
-                torch.randn([batch_size, seq_len, emb_size])
-                if batch_first
-                else torch.randn([seq_len, batch_size, emb_size])
-            )
+            x = (torch.randn([batch_size, seq_len, emb_size]) if batch_first
+                 else torch.randn([seq_len, batch_size, emb_size]))
         elif packed_input_flag == 1:
             # packed sequence input in sorted order
-            x = _gen_packed_data(
-                batch_size, seq_len, emb_size, batch_first, sorted_=True
-            )
+            x = _gen_packed_data(batch_size,
+                                 seq_len,
+                                 emb_size,
+                                 batch_first,
+                                 sorted_=True)
         elif packed_input_flag == 2:
             # packed sequence input in unsorted order
-            x = _gen_packed_data(
-                batch_size, seq_len, emb_size, batch_first, sorted_=False
-            )
+            x = _gen_packed_data(batch_size,
+                                 seq_len,
+                                 emb_size,
+                                 batch_first,
+                                 sorted_=False)
         else:
             raise ValueError("Invalid packed input flag")
         torch.use_deterministic_algorithms(True)
@@ -149,8 +152,10 @@ class DPLSTM_test(DPModules_test):
 
         else:
             num_directions = 2 if bidirectional else 1
-            h0 = torch.randn([num_layers * num_directions, batch_size, hidden_size])
-            c0 = torch.randn([num_layers * num_directions, batch_size, hidden_size])
+            h0 = torch.randn(
+                [num_layers * num_directions, batch_size, hidden_size])
+            c0 = torch.randn(
+                [num_layers * num_directions, batch_size, hidden_size])
             self.compare_forward_outputs(
                 rnn,
                 dp_rnn,

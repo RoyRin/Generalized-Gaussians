@@ -59,8 +59,7 @@ class BatchSplittingSampler(Sampler[List[int]]):
                 continue
 
             split_idxs = np.array_split(
-                batch_idxs, math.ceil(len(batch_idxs) / self.max_batch_size)
-            )
+                batch_idxs, math.ceil(len(batch_idxs) / self.max_batch_size))
             split_idxs = [s.tolist() for s in split_idxs]
             for x in split_idxs[:-1]:
                 self.optimizer.signal_skip_step(do_skip=True)
@@ -71,20 +70,21 @@ class BatchSplittingSampler(Sampler[List[int]]):
     def __len__(self):
         if isinstance(self.sampler, BatchSampler):
             return int(
-                len(self.sampler) * (self.sampler.batch_size / self.max_batch_size)
-            )
-        elif isinstance(self.sampler, UniformWithReplacementSampler) or isinstance(
-            self.sampler, DistributedUniformWithReplacementSampler
-        ):
+                len(self.sampler) *
+                (self.sampler.batch_size / self.max_batch_size))
+        elif isinstance(
+                self.sampler, UniformWithReplacementSampler) or isinstance(
+                    self.sampler, DistributedUniformWithReplacementSampler):
             expected_batch_size = self.sampler.sample_rate * self.sampler.num_samples
-            return int(len(self.sampler) * (expected_batch_size / self.max_batch_size))
+            return int(
+                len(self.sampler) *
+                (expected_batch_size / self.max_batch_size))
 
         return len(self.sampler)
 
 
-def wrap_data_loader(
-    *, data_loader: DataLoader, max_batch_size: int, optimizer: DPOptimizer
-):
+def wrap_data_loader(*, data_loader: DataLoader, max_batch_size: int,
+                     optimizer: DPOptimizer):
     """
     Replaces batch_sampler in the input data loader with ``BatchSplittingSampler``
 

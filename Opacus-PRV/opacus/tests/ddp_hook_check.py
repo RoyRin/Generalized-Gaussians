@@ -26,7 +26,6 @@ from opacus import PrivacyEngine
 from opacus.distributed import DifferentiallyPrivateDistributedDataParallel as DPDDP
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-
 PRIVACY_ALPHAS = [1 + x / 10.0 for x in range(1, 100)] + list(range(12, 64))
 
 
@@ -44,16 +43,19 @@ def setup_and_get_device(rank, world_size, nonce=0):
         init_method = "file:///{your local file path}"
 
         # initialize the process group
-        dist.init_process_group(
-            "gloo", init_method=init_method, rank=rank, world_size=world_size
-        )
+        dist.init_process_group("gloo",
+                                init_method=init_method,
+                                rank=rank,
+                                world_size=world_size)
         device = rank
     elif os.environ.get("SLURM_NTASKS") is not None:
         # Running on a Slurm cluster
         os.environ["MASTER_ADDR"] = "127.0.0.1"
         os.environ["MASTER_PORT"] = str(7440 + nonce)
         local_rank = int(os.environ.get("SLURM_LOCALID"))
-        dist.init_process_group(backend="gloo", rank=rank, world_size=world_size)
+        dist.init_process_group(backend="gloo",
+                                rank=rank,
+                                world_size=world_size)
 
         # The device is the local rank (if you have 2 nodes with 8 GPUs each, you will have two "cuda:0" devices)
         device = local_rank
@@ -78,6 +80,7 @@ def cleanup():
 
 
 class ToyModel(nn.Module):
+
     def __init__(self):
         super(ToyModel, self).__init__()
         self.net1 = nn.Linear(10, 10)
@@ -88,12 +91,19 @@ class ToyModel(nn.Module):
         return self.net2(self.relu(self.net1(x)))
 
 
-def demo_basic(rank, world_size, weight, dp, noise_multiplier=0, max_grad_norm=1e8):
+def demo_basic(rank,
+               world_size,
+               weight,
+               dp,
+               noise_multiplier=0,
+               max_grad_norm=1e8):
     # We don't want the 2 GPUs to work on the same examples/labels in parallel
     torch.manual_seed(rank)
     batch_size = 32
     withdp = "with" + ("out " if not dp else "")
-    print(f"Running basic DDP {withdp} differential privacy example on rank {rank}.")
+    print(
+        f"Running basic DDP {withdp} differential privacy example on rank {rank}."
+    )
 
     device = setup_and_get_device(rank, world_size)
 
@@ -138,11 +148,14 @@ def demo_basic(rank, world_size, weight, dp, noise_multiplier=0, max_grad_norm=1
     cleanup()
 
 
-def demo_ddp_hook(rank, world_size, weight, dp, noise_multiplier, max_grad_norm):
+def demo_ddp_hook(rank, world_size, weight, dp, noise_multiplier,
+                  max_grad_norm):
     torch.manual_seed(rank)
     batch_size = 32
     withdp = "with" + ("out " if not dp else "")
-    print(f"Running DDP hook {withdp} differential privacy example on rank {rank}.")
+    print(
+        f"Running DDP hook {withdp} differential privacy example on rank {rank}."
+    )
 
     device = setup_and_get_device(rank, world_size, nonce=1)
 
@@ -184,9 +197,12 @@ def demo_ddp_hook(rank, world_size, weight, dp, noise_multiplier, max_grad_norm)
     cleanup()
 
 
-def add_remove_ddp_hooks(
-    rank, world_size, remaining_hooks, dp, noise_multiplier=0, max_grad_norm=1e8
-):
+def add_remove_ddp_hooks(rank,
+                         world_size,
+                         remaining_hooks,
+                         dp,
+                         noise_multiplier=0,
+                         max_grad_norm=1e8):
     device = setup_and_get_device(rank, world_size, nonce=2)
 
     model = ToyModel().to(device)
@@ -206,12 +222,14 @@ def add_remove_ddp_hooks(
     engine.attach(optimizer)
 
     remaining_hooks["attached"] = {
-        p: p._backward_hooks for p in engine.module.parameters() if p._backward_hooks
+        p: p._backward_hooks
+        for p in engine.module.parameters() if p._backward_hooks
     }
     engine.detach()
 
     remaining_hooks["detached"] = {
-        p: p._backward_hooks for p in engine.module.parameters() if p._backward_hooks
+        p: p._backward_hooks
+        for p in engine.module.parameters() if p._backward_hooks
     }
 
     cleanup()
@@ -227,16 +245,23 @@ def debug(rank, world_size, tensor, dp, noise_multiplier=0, max_grad_norm=1e8):
     cleanup()
 
 
-def run_function(local_function, tensor, dp, noise_multiplier=0, max_grad_norm=1e8):
+def run_function(local_function,
+                 tensor,
+                 dp,
+                 noise_multiplier=0,
+                 max_grad_norm=1e8):
     if os.environ.get("SLURM_NTASKS") is not None:
         world_size = int(os.environ.get("SLURM_NTASKS"))
         rank = int(os.environ.get("SLURM_PROCID"))
         print(f"Running on a Slurm cluster with {world_size} tasks.")
 
-        local_function(rank, world_size, tensor, dp, noise_multiplier, max_grad_norm)
+        local_function(rank, world_size, tensor, dp, noise_multiplier,
+                       max_grad_norm)
     else:
         world_size = torch.cuda.device_count()
-        print(f"Spawning multiple processes on a local machine with {world_size} GPUs")
+        print(
+            f"Spawning multiple processes on a local machine with {world_size} GPUs"
+        )
 
         # The rank will be passed as the first argument
         mp.spawn(
@@ -255,13 +280,14 @@ def run_function(local_function, tensor, dp, noise_multiplier=0, max_grad_norm=1
 
 
 class GradientComputationTest(unittest.TestCase):
+
     def test_connection(self):
         tensor = torch.zeros(10, 10)
         world_size = run_function(debug, tensor, dp=True)
 
         self.assertTrue(
-            world_size >= 2, f"Need at least 2 gpus but was provided only {world_size}."
-        )
+            world_size >= 2,
+            f"Need at least 2 gpus but was provided only {world_size}.")
 
     def test_gradient_noclip_zeronoise(self):
         # Tests that gradient is the same with DP or with DDP
@@ -274,7 +300,8 @@ class GradientComputationTest(unittest.TestCase):
 
     def test_ddp_hook(self):
         # Tests that the DDP hook does the same thing as naive aggregation with per layer clipping
-        weight_ddp_naive, weight_ddp_hook = torch.zeros(10, 10), torch.zeros(10, 10)
+        weight_ddp_naive, weight_ddp_hook = torch.zeros(10, 10), torch.zeros(
+            10, 10)
 
         run_function(
             demo_basic,
@@ -314,5 +341,4 @@ class GradientComputationTest(unittest.TestCase):
         assert remaining_hooks["attached"], "There are no hooks."
 
         assert not remaining_hooks[
-            "detached"
-        ], f"Some hooks remain after .remove_hooks(): {remaining_hooks}"
+            "detached"], f"Some hooks remain after .remove_hooks(): {remaining_hooks}"

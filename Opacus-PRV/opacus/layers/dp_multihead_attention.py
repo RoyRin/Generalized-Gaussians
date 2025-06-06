@@ -101,9 +101,8 @@ class DPMultiheadAttention(nn.Module):
         self.num_heads = num_heads
         self.dropout = dropout
         self.head_dim = embed_dim // num_heads
-        assert (
-            self.head_dim * num_heads == self.embed_dim
-        ), "embed_dim must be divisible by num_heads"
+        assert (self.head_dim * num_heads == self.embed_dim
+                ), "embed_dim must be divisible by num_heads"
 
         self.qlinear = nn.Linear(embed_dim, embed_dim, bias=bias)
         self.klinear = nn.Linear(self.kdim, embed_dim, bias=bias)
@@ -132,7 +131,8 @@ class DPMultiheadAttention(nn.Module):
                 https://pytorch.org/tutorials/recipes/recipes/what_is_state_dict.html.
         """
         if "in_proj_weight" in state_dict:
-            qweight, kweight, vweight = state_dict["in_proj_weight"].chunk(3, dim=0)
+            qweight, kweight, vweight = state_dict["in_proj_weight"].chunk(
+                3, dim=0)
 
             state_dict["qlinear.weight"] = qweight
             state_dict["klinear.weight"] = kweight
@@ -183,16 +183,13 @@ class DPMultiheadAttention(nn.Module):
         if embed_dim != self.embed_dim:
             raise ValueError(
                 f"query has as size of {embed_dim} while the embedding"
-                " size is {self.embed_dim}"
-            )
+                " size is {self.embed_dim}")
 
         head_dim = embed_dim // self.num_heads
         if head_dim * self.num_heads != embed_dim:
-            raise ValueError(
-                f"embedding dimension {embed_dim} not divisible "
-                "by number of heads {num_heads}"
-            )
-        scaling = float(head_dim) ** -0.5
+            raise ValueError(f"embedding dimension {embed_dim} not divisible "
+                             "by number of heads {num_heads}")
+        scaling = float(head_dim)**-0.5
 
         q = self.qlinear(query)
         k = self.klinear(key)
@@ -202,46 +199,45 @@ class DPMultiheadAttention(nn.Module):
 
         if attn_mask is not None:
             if attn_mask.dtype not in (
-                torch.float32,
-                torch.float64,
-                torch.uint8,
-                torch.bool,
+                    torch.float32,
+                    torch.float64,
+                    torch.uint8,
+                    torch.bool,
             ):
                 raise ValueError(
                     f"Only float, byte, and bool types are supported for attn_mask, "
-                    f"not {attn_mask.dtype}."
-                )
+                    f"not {attn_mask.dtype}.")
 
             if attn_mask.dtype == torch.uint8:
                 warnings.warn(
                     "Byte tensor for attn_mask in nn.MultiheadAttention is deprecated."
-                    "Use bool tensor instead."
-                )
+                    "Use bool tensor instead.")
                 attn_mask = attn_mask.to(torch.bool)
 
             if attn_mask.dim() == 2:
                 attn_mask = attn_mask.unsqueeze(0)
                 if list(attn_mask.size()) != [1, query.size(0), key.size(0)]:
-                    raise ValueError("The size of the 2D attn_mask is not correct.")
+                    raise ValueError(
+                        "The size of the 2D attn_mask is not correct.")
             elif attn_mask.dim() == 3:
                 if list(attn_mask.size()) != [
-                    bsz * self.num_heads,
-                    query.size(0),
-                    key.size(0),
+                        bsz * self.num_heads,
+                        query.size(0),
+                        key.size(0),
                 ]:
-                    raise ValueError("The size of the 3D attn_mask is not correct.")
+                    raise ValueError(
+                        "The size of the 3D attn_mask is not correct.")
             else:
                 raise ValueError(
-                    "attn_mask's dimension {} is not supported".format(attn_mask.dim())
-                )
+                    "attn_mask's dimension {} is not supported".format(
+                        attn_mask.dim()))
             # attn_mask's dim is 3 now.
 
         # convert ByteTensor key_padding_mask to bool
         if key_padding_mask is not None and key_padding_mask.dtype == torch.uint8:
             warnings.warn(
                 "Byte tensor for key_padding_mask in nn.MultiheadAttention"
-                "is deprecated. Use bool tensor instead."
-            )
+                "is deprecated. Use bool tensor instead.")
             key_padding_mask = key_padding_mask.to(torch.bool)
 
         if self.add_bias_kv:
@@ -252,11 +248,14 @@ class DPMultiheadAttention(nn.Module):
             if key_padding_mask is not None:
                 key_padding_mask = F.pad(key_padding_mask, (0, 1))
 
-        q = q.contiguous().view(tgt_len, bsz * self.num_heads, head_dim).transpose(0, 1)
+        q = q.contiguous().view(tgt_len, bsz * self.num_heads,
+                                head_dim).transpose(0, 1)
         if k is not None:
-            k = k.contiguous().view(-1, bsz * self.num_heads, head_dim).transpose(0, 1)
+            k = k.contiguous().view(-1, bsz * self.num_heads,
+                                    head_dim).transpose(0, 1)
         if v is not None:
-            v = v.contiguous().view(-1, bsz * self.num_heads, head_dim).transpose(0, 1)
+            v = v.contiguous().view(-1, bsz * self.num_heads,
+                                    head_dim).transpose(0, 1)
 
         src_len = k.size(1)
 
@@ -269,18 +268,18 @@ class DPMultiheadAttention(nn.Module):
             k = torch.cat(
                 [
                     k,
-                    torch.zeros(
-                        (k.size(0), 1) + k.size()[2:], dtype=k.dtype, device=k.device
-                    ),
+                    torch.zeros((k.size(0), 1) + k.size()[2:],
+                                dtype=k.dtype,
+                                device=k.device),
                 ],
                 dim=1,
             )
             v = torch.cat(
                 [
                     v,
-                    torch.zeros(
-                        (v.size(0), 1) + v.size()[2:], dtype=v.dtype, device=v.device
-                    ),
+                    torch.zeros((v.size(0), 1) + v.size()[2:],
+                                dtype=v.dtype,
+                                device=v.device),
                 ],
                 dim=1,
             )
@@ -304,30 +303,26 @@ class DPMultiheadAttention(nn.Module):
 
         if key_padding_mask is not None:
             attn_output_weights = attn_output_weights.view(
-                bsz, self.num_heads, tgt_len, src_len
-            )
+                bsz, self.num_heads, tgt_len, src_len)
             attn_output_weights = attn_output_weights.masked_fill(
-                key_padding_mask.unsqueeze(1).unsqueeze(2), float("-inf")
-            )
+                key_padding_mask.unsqueeze(1).unsqueeze(2), float("-inf"))
             attn_output_weights = attn_output_weights.view(
-                bsz * self.num_heads, tgt_len, src_len
-            )
+                bsz * self.num_heads, tgt_len, src_len)
 
         attn_output_weights = F.softmax(attn_output_weights, dim=-1)
         attn_output_weights = self.dropout(attn_output_weights)
 
         attn_output = torch.bmm(attn_output_weights, v)
-        assert list(attn_output.size()) == [bsz * self.num_heads, tgt_len, head_dim]
-        attn_output = (
-            attn_output.transpose(0, 1).contiguous().view(tgt_len, bsz, embed_dim)
-        )
+        assert list(
+            attn_output.size()) == [bsz * self.num_heads, tgt_len, head_dim]
+        attn_output = (attn_output.transpose(0, 1).contiguous().view(
+            tgt_len, bsz, embed_dim))
         attn_output = self.out_proj(attn_output)
 
         if need_weights:
             # average attention weights over heads
             attn_output_weights = attn_output_weights.view(
-                bsz, self.num_heads, tgt_len, src_len
-            )
+                bsz, self.num_heads, tgt_len, src_len)
             return attn_output, attn_output_weights.sum(dim=1) / self.num_heads
         else:
             return attn_output, None
@@ -371,21 +366,19 @@ class DPMultiheadAttention(nn.Module):
                 0,
             )
         else:
-            destination_alter[prefix + "q_proj_weight"] = destination[
-                prefix + "qlinear.weight"
-            ]
-            destination_alter[prefix + "k_proj_weight"] = destination[
-                prefix + "klinear.weight"
-            ]
-            destination_alter[prefix + "v_proj_weight"] = destination[
-                prefix + "vlinear.weight"
-            ]
+            destination_alter[prefix +
+                              "q_proj_weight"] = destination[prefix +
+                                                             "qlinear.weight"]
+            destination_alter[prefix +
+                              "k_proj_weight"] = destination[prefix +
+                                                             "klinear.weight"]
+            destination_alter[prefix +
+                              "v_proj_weight"] = destination[prefix +
+                                                             "vlinear.weight"]
 
-        if (
-            (prefix + "qlinear.bias") in destination
-            and (prefix + "klinear.bias") in destination
-            and (prefix + "vlinear.bias") in destination
-        ):
+        if ((prefix + "qlinear.bias") in destination
+                and (prefix + "klinear.bias") in destination
+                and (prefix + "vlinear.bias") in destination):
             destination_alter[prefix + "in_proj_bias"] = torch.cat(
                 (
                     destination[prefix + "qlinear.bias"],
@@ -397,19 +390,17 @@ class DPMultiheadAttention(nn.Module):
 
         if self.add_bias_kv:
             destination_alter[prefix + "bias_k"] = self.unsqueeze_0_2(
-                destination[prefix + "seq_bias_k.bias"]
-            )
+                destination[prefix + "seq_bias_k.bias"])
             destination_alter[prefix + "bias_v"] = self.unsqueeze_0_2(
-                destination[prefix + "seq_bias_v.bias"]
-            )
+                destination[prefix + "seq_bias_v.bias"])
 
-        destination_alter[prefix + "out_proj.weight"] = destination[
-            prefix + "out_proj.weight"
-        ]
+        destination_alter[prefix +
+                          "out_proj.weight"] = destination[prefix +
+                                                           "out_proj.weight"]
         if (prefix + "out_proj.bias") in destination:
-            destination_alter[prefix + "out_proj.bias"] = destination[
-                prefix + "out_proj.bias"
-            ]
+            destination_alter[prefix +
+                              "out_proj.bias"] = destination[prefix +
+                                                             "out_proj.bias"]
 
         for hook in self._state_dict_hooks.values():
             hook_result = hook(self, destination_alter, prefix, local_metadata)
