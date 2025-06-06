@@ -134,8 +134,6 @@ def _generate_noise(
     zeros = torch.zeros(reference.shape, device=reference.device)
     if std == 0:
         return zeros
-    # TODO: handle device transfers: generator and reference tensor
-    # could be on different devices
     if secure_mode:
         torch.normal(
             mean=0,

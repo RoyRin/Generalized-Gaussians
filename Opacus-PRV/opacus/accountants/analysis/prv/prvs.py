@@ -18,16 +18,10 @@ def get_tail_bound(beta, scale, mu=1., tolerance=1e-3):
  
     exp(-(|x-mu|/scale)^beta) = tolerance
     """
-    # TODO - fact check that this is correct (it may over do it, which is okay)
-    # exp(-(|x-mu|/scale)^beta) = tolerance
-    # |x-mu|/scale = np.log(tol)** (1/beta)
     ret = np.power(-np.log(tolerance), 1 / beta)
     return ret * scale + mu
 
 
-# TODO:
-# Provide a uniform place for transitoining between these
-#
 def scale_to_sigma(scale):
     return scale / np.sqrt(2)
 
@@ -50,14 +44,6 @@ def cdf_prv_f__sampling(mu,
     """
     # #scale = sigma_to_scale(sigma)
 
-    #
-    # TODO :
-    # TODO : take the CDF of an n-dimensional array, and do it a lot of times to compute the histogram. Need to know the dimension of the noise we will be taking.
-    # it should be the same dimension as the total size of the gradients
-    # for p in self.params:
-    #   noise = self.beta_sampler(shape=p.summed_grad.shape)
-    # TODO :
-    #
     if samples is None:
         sampler = sampling.beta_exponential_sampler_from_scale(beta=beta,
                                                                scale=scale)

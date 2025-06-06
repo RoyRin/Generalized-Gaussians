@@ -554,7 +554,6 @@ class PrivacyEngine:
         Returns:
             Privacy budget (epsilon) expended so far.
         """
-        # NOTE/ TODO: only custom PRV for EPM takes beta as an argument - so this could break non-PRV accounting things
         print(f"getting epsil for {beta}")
         return self.accountant.get_epsilon(delta,
                                            beta=beta,

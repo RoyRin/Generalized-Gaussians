@@ -27,7 +27,6 @@ from torchvision import transforms
 from torchvision.datasets import FakeData
 
 
-# TODO: add recurrent model here too
 class SampleConvNet(nn.Module):
 
     def __init__(self):

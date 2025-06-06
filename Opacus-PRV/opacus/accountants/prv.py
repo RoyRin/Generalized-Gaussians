@@ -29,9 +29,6 @@ from .analysis.prv import (
     PoissonSubsampledGenericPRV)
 
 
-#
-# TODO- Roy - need to actually call the PRV
-#
 class PRVAccountant(IAccountant):
     r"""
     Tracks privacy expenditure via numerical composition of Privacy loss Random
@@ -68,9 +65,6 @@ class PRVAccountant(IAccountant):
         self.PoissonSubsampledEPMPRV_f = None
 
     #
-    # TODO - question - how do I treat noise_multiplier vs scale
-    # Answer: later we call self.scale = sigma_to_scale(sigma)
-    # **so noise_multipler = sigma, and we need to swap between there **
 
     def step(self, *, noise_multiplier: float, sample_rate: float):
         if len(self.history) >= 1:
