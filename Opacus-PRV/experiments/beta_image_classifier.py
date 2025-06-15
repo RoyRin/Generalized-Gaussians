@@ -90,16 +90,7 @@ def train(
 
             losses.append(loss.item())
             top1_acc.append(acc)
-            #print("got here?")
             loss.backward()
-            #
-            #        #
-            # try:
-            #     for p in model.params:
-            #         print(p.shape)
-            # except Exception as e:
-            #     print(e)
-            #     print("moving on")
 
             optimizer.step()  # add the noise to the gradients
 
@@ -155,24 +146,11 @@ def sigma_to_scale(sigma):
     return sigma * np.sqrt(2)
 
 
-#def initialize_model(device, LR=1e-2, momentum=0.9):
-#def initialize_model_handcrafted(device, LR=1e-2, momentum=0.9):
-#def initialize_model_scatternet_cnns(device, train_loader, bn_noise_multiplier=8, LR=1e-2,momentum=0.9):
-#def initialize_model_WRN(device, LR=1e-2):
-
 
 def __initialize_model(device, model_factory, LR=1e-2, momentum=0.9):
     print("initialize model")
     model = model_factory()
-    print("!")
-    #print(f"model is {model}")
-    #print("blarg"* 3)
     model = ModuleValidator.fix(model)
-    print("CRAW!")
-
-    #print(f"model is {model}")
-    #print("-------------")
-    # ModuleValidator.validate(model, strict=False)
     model = model.to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=LR, momentum=momentum)
@@ -181,17 +159,7 @@ def __initialize_model(device, model_factory, LR=1e-2, momentum=0.9):
 
 
 def initialize_model(device, model, LR=1e-2, momentum=0.9):
-    print("initialize model")
-    #model = model_factory()
-    print("!")
-    #print(f"model is {model}")
-    #print("blarg"* 3)
     model = ModuleValidator.fix(model)
-    print("CRAW!")
-
-    #print(f"model is {model}")
-    #print("-------------")
-    # ModuleValidator.validate(model, strict=False)
     model = model.to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=LR, momentum=momentum)

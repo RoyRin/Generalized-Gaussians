@@ -95,8 +95,7 @@ class AdultDataset(torch.utils.data.Dataset):
 
 
 def initialize_data_ADULT(batch_size=1024, DATA_ROOT="../ADULT"):
-    dir_path = "/h/royrin/new_code/data-aware-dp/Opacus-PRV/experiments"
-    path = f"{dir_path}/adult.csv"
+    path = f"{DATA_ROOT}/adult.csv"
     x = pd.read_csv(path)  # 'adult.csv')
     trainData, testData = train_test_split(x, test_size=0.1, random_state=218)
     # have to reset index, see https://discuss.pytorch.org/t/keyerror-when-enumerating-over-dataloader/54210/13

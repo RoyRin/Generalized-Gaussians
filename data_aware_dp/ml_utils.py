@@ -242,8 +242,6 @@ def get_privacy_model(
 
     if beta is not None:
 
-        # c = rdp.solve_for_c_val_for_beta_exponential(target_rdp_val, beta)
-
         c = rdp.solve_for_c_val_for_equivalent_RDP_as_SGM(
             beta=beta,
             target_epsilon=target_epsilon,
@@ -253,7 +251,7 @@ def get_privacy_model(
             epochs=epochs,
             sensitivity=sensitivity)
 
-        # NOTE TO ROY: this assumes we are using torch?
+        # this assumes we are using torch?
         beta_sampler = sampling.beta_exponential_sampler__torch(beta,
                                                                 c,
                                                                 device=device)
@@ -475,13 +473,9 @@ def do_a_single_eps_beta_run(args_eps):
             ret["test_losses"].append(test_losses)
             ret["test_loss"].append(float(test_loss))
             ret["accuracies"].append(accuracies)
-            print("losses")
-            print(losses[::10])
-            print("test losses")
-            print(test_losses[::10])
         except Exception as e:
             print(ret)
-            print(f"exception?:  {e}")
+            print(f"exception:  {e}")
             continue
     del args
 

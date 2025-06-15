@@ -49,7 +49,7 @@ def compute_embedding_grad_sample(
                                                       batch_size, -1,
                                                       layer.embedding_dim))
         #
-        ## HACK by Roy! < makes it work for DP!
+        ## makes it work for DP!
         #
         index = index.type(torch.int64)
 

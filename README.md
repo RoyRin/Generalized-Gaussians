@@ -11,3 +11,25 @@ We apply the GG mechanism to two canonical tools for private machine learning, P
 
 # Code Note: 
 `Opacus-PRV` is the `Opacus` (https://github.com/pytorch/opacus) library forked in mid-2021; with modifications made.
+
+```
+data_aware_dp/
+├── __init__.py
+├── datasets.py
+├── histogram_computation.py
+├── histogram_evaluation.py - Code for evaluating histograms with generalized guassians
+├── ml_training.py
+├── ml_utils.py
+├── models.py
+├── pate_dadp.py
+├── plotting.py
+├── rdp.py
+├── sampling.py
+├── train_ml_cli.py
+├── utils.py
+└── wide_resnet.py
+```
+
+# terminology
+
+There are several terms for the generalized gaussian distribution; in the code it is sometimes referred to as `beta exponenital`, `generalized gaussians`, or `exponential power distribution`.

@@ -131,7 +131,7 @@ def scatter_normalization(train_loader,
 
     mean = torch.from_numpy(mean).to(device)
     var = torch.from_numpy(var).to(device)
-    print("we did the normalization")
+    print("Did the normalization")
     return (mean, var), rdp
 
 

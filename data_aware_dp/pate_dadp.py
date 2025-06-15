@@ -2,7 +2,7 @@ import numpy as np
 from pathlib import Path
 from importlib import reload
 import data_aware_dp
-from data_aware_dp import histogram_computation, evaluation, sampling
+from data_aware_dp import histogram_computation, histogram_evaluation, sampling
 import datetime
 import warnings
 import itertools

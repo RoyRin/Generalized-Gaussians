@@ -129,24 +129,19 @@ class PRVAccountant(IAccountant):
                 bin_count=bin_count,
                 tol=tolerance,
                 dimension=dimension).cdf
-            print(f"done sampling")
 
         if delta_error is None:
             delta_error = delta / 1000
         # we construct a discrete PRV from the historyget_epsilon
-        print("craw")
         dprv = self._get_dprv(
             eps_error=eps_error,
             delta_error=delta_error,
             #
             beta=beta)
         # this discrete PRV can be used to directly estimate and bound epsilon
-        # print("got to here ")
-        # print(dprv)
-        print("claw")
+        
         _, _, eps_upper = dprv.compute_epsilon(delta, delta_error, eps_error)
         # return upper bound as we want guarantee, not just estimate
-        print("here!---")
         return eps_upper
 
     def _get_dprv(

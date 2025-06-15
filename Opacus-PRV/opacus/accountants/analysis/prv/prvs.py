@@ -59,7 +59,6 @@ def cdf_prv_f__sampling(mu,
              np.power(np.abs(samples), beta)) / (scale**beta)  #* -1
         X = Y * -1
         tail_bound = 2 * get_tail_bound(beta, scale, tolerance=tolerance)
-        print(f"tail_bound is {tail_bound}")
         tail_bound = max(tail_bound, 70)
         tail_bound_left = -tail_bound
         tail_bound_right = tail_bound
@@ -69,12 +68,8 @@ def cdf_prv_f__sampling(mu,
         X = samples * -1
         tail_bound_right = np.sign(max(samples)) * max(abs(samples)) * 1.1
         tail_bound_left = np.sign(min(samples)) * min(abs(samples)) * 0.9
-        print(tail_bound_left)
-        print(tail_bound_right)
         tail_bound_right = max(tail_bound_right, tail_bound_left)
         tail_bound_left = min(tail_bound_right, tail_bound_left)
-    # print(tail_bound)
-    # print(f"val at tail_bound is {np.exp(-tail_bound**beta / scale)}")
 
     bins = np.linspace(tail_bound_left, tail_bound_right, bin_count)
 
@@ -87,7 +82,6 @@ def cdf_prv_f__sampling(mu,
     X_cdf = np.convolve(X_cdf, np.ones(window_) / window_, mode='same')
     Y_cdf = np.convolve(Y_cdf, np.ones(window_) / window_, mode='same')
 
-    print(f"interpolating")
     X_cdf_f_ = scipy.interpolate.interp1d(
         bins[:-1],
         X_cdf,
@@ -115,15 +109,6 @@ def cdf_prv_f__sampling(mu,
         return Y_cdf_f_(float(t))
 
     return X_cdf_f, Y_cdf_f
-
-
-#
-# EPD: exp(-(|x-mu|/scale)^beta)
-# Gaussian: exp(- 1/2 (|x-mu|/sigma)^2)
-# original Roy: exp(- c* (|x-mu|)^beta)
-#
-# Definitional: Sigma := Noise_multiplier
-#
 
 N = 10_000_000
 bin_count = int(N / 50)
@@ -160,7 +145,6 @@ class PoissonSubsampledEPMPRV:
         self.beta = beta
 
         self.scale = sigma_to_scale(self.noise_multiplier)
-        print("scale (from PoissonSubsampledEPMPRV)", self.scale)
 
         self.X_cdf_function, self.Y_cdf_function = cdf_prv_f__sampling(
             mu,
@@ -363,13 +347,9 @@ def discretize(prv, domain: Domain) -> DiscretePRV:
     discrete_pmf = prv.cdf(tR) - prv.cdf(tL)
 
     mean_d = np.dot(domain.ts, discrete_pmf)
-    # print(f"Discrete mean: {mean_d}")
     mean_c = prv.mean()
-    #print(f"Continuous mean: {mean_c}")
 
     mean_shift = mean_c - mean_d
-    #print(mean_shift)
-    #print(domain.dt / 2)
 
     if np.abs(mean_shift) >= domain.dt / 2:
         raise RuntimeError(

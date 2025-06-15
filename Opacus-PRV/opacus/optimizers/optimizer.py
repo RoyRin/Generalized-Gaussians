@@ -200,7 +200,7 @@ class DPOptimizer(Optimizer):
             loss_reduction: str = "mean",
             generator=None,
             secure_mode: bool = False,
-            # Added by Roy - for DSDP sampling
+            # Added for DSDP sampling
             beta=None,
             beta_sampler=None,  # function that samples from beta distribution
     ):
@@ -421,10 +421,8 @@ class DPOptimizer(Optimizer):
             _check_processed_flag(p.grad_sample)
             grad_sample = self._get_flat_grad_sample(p)
             if empty_batch:
-                print("\n\n This got called !!!! \n \n \n ")
                 #
-                ## added by roy - because of device issues
-                # (may have huge overhead)
+                ## NOTE : added because of device issues (may have huge overhead)
                 per_sample_clip_factor = per_sample_clip_factor.to(
                     grad_sample.device)
             grad = contract("i,i...", per_sample_clip_factor, grad_sample)
@@ -447,21 +445,9 @@ class DPOptimizer(Optimizer):
             # this is where DSDP noise is added
             if self.beta_sampler is not None:
                 # add to device
-
-                # noise = self.beta_sampler(size=p.summed_grad.shape)
-                # make sure sampler is adding noise on torch device
                 noise = self.beta_sampler(shape=p.summed_grad.shape)
-                # POTENTIAL HACK - because noise looks like [64, 3,7, 7,7 1] instead of [64, 3,7, 7,7]
-
                 noise = torch.flatten(noise, start_dim=-2)
-                # noise = torch.from_numpy(noise).to(device=p.summed_grad.device)
-                # convert to same type as p.summed_grad
                 noise = noise.type(p.grad.dtype)
-                # print(f"noise shape")
-                # print(noise.shape)
-                # print(f"p.summed_grad.shape")
-                # print(p.summed_grad.shape)
-                #noise.to(device=p.summed_grad.device)
             else:
                 noise = _generate_noise(
                     std=self.noise_multiplier * self.max_grad_norm,

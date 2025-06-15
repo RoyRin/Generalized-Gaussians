@@ -19,20 +19,8 @@ DEFAULT_Q_VALUE = 4096 / 45000
 
 CWD = Path.cwd()
 
-potential_basedirs = [
-    Path("/home/roy/code/research/cleverhans/data-aware-dp/"),
-    Path("/h/royrin/code/data-aware-dp/"),
-    Path("/h/321/royrinberg/code/data-aware-dp/"),
-]
-BASEDIR = None
 
-for potential_basedir in potential_basedirs:
-    if potential_basedir.exists():
-        BASEDIR = potential_basedir
-        break
-if BASEDIR is None:
-    raise ValueError("Could not find base dir")
-#BASEDIR = CWD.parent if CWD.exists() else "/h/royrin/code/data-aware-dp/"
+BASEDIR = CWD
 
 mathematica_datadir = BASEDIR / "mathematica_simulations/"
 

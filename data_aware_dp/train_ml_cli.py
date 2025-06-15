@@ -8,9 +8,6 @@ import logging
 import click
 import os
 
-DEFAULT_BASE = "/home/roy/code/research/cleverhans/data-aware-dp/assets/linear_regression"
-if not os.path.exists(DEFAULT_BASE):
-    DEFAULT_BASE = "/h/321/royrinberg/linear_regression_results"
 
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(logging.INFO)
@@ -41,7 +38,7 @@ def get_betas(beta_count=40):
 @cli.command(
     name="linear-regression",
     help="""run linear regression with DP-SGD, on an artificial dataset""")
-@click.option("-s", "--save_dir", "-s", default=DEFAULT_BASE)
+@click.option("-s", "--save_dir", "-s", default=".")
 @click.option("-c", "--epsilon-count", default=30, help="number of epsilons")
 @click.option("--epsilon-min", default=.5, help=" min epsilon value")
 @click.option("--epsilon-max", default=.5, help="max epsilon value")

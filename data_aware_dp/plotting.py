@@ -1,6 +1,50 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from data_aware_dp import rdp, beta_exponential
+from data_aware_dp import rdp
+import scipy
+
+
+
+def scale_from_c(c, beta):
+    return 1 / (c**(1 / beta))
+
+
+def c_from_scale(scale, beta):
+    return (1 / scale)**beta
+
+
+def solve_for_k(beta, c=1):  # k is the normalization constant
+    """ numerically compute the normalization constant for the beta-exponential distribution
+    so that it integrates to 1
+
+        (k * exp(-c* |x|**beta)) 
+    returns:
+        k, tail_bound_error
+    """
+    scale = scale_from_c(c, beta)
+    coef = beta / (2 * np.power(scale, 1 / beta) *
+                   scipy.special.gamma(1. / beta))
+    return coef
+
+
+def beta_exponent(x, beta, c, k=None, shift=0.):
+    """ Exponential Power Mechanism
+    k * np.exp(-1. * c * ((np.abs(x - shift))**beta))
+
+    Args:
+        x (float or np.array): _description_
+        beta (float) : 
+        c (float): Defaults to 1.
+        k (float): scaling constant. Defaults to 1.
+        shift (int, optional): _description_. Defaults to 0.
+    Returns:
+        beta exponential distribution evaluated at x
+    """
+    if k is None:
+        k = solve_for_k(beta, c)
+    return k * np.exp(-1. * c * ((np.abs(x - shift))**beta))
+
+
 
 
 def plot_rdp_scaling(betas=None, x_range=[-4, 4], y_max=25):
@@ -16,26 +60,12 @@ def plot_rdp_scaling(betas=None, x_range=[-4, 4], y_max=25):
     plt.ylabel(r"R$\'e$nyi divergence")
     plt.xlabel(r"$\alpha$")
     alphas = np.arange(2, 100, 0.3)
-    if False:
-        p1 = beta_exponential.beta_exponent(x, beta=2, shift=0)
-        p1 = p1 / sum(p1)  # rescale
-        p2 = beta_exponential.beta_exponent(x, beta=2,
-                                            shift=1)  # assume sensitivity = 1
-        p2 = p2 / sum(p2)
-        renyi_divergence_values = [
-            rdp.renyi_divergence(p1, p2, alpha_i) for alpha_i in alphas
-        ]
-        renyi_divergence_values = [val[0] for val in renyi_divergence_values]
-        plt.plot(alphas,
-                 renyi_divergence_values,
-                 label=f"beta = {np.around(beta,2)}",
-                 color="red",
-                 linewidth=2)
+
 
     for beta in betas:
-        p1 = beta_exponential.beta_exponent(x, beta=beta, shift=0)
+        p1 = beta_exponent(x, beta=beta, shift=0)
         p1 = p1 / sum(p1)  # rescale
-        p2 = beta_exponential.beta_exponent(x, beta=beta,
+        p2 = beta_exponent(x, beta=beta,
                                             shift=1)  # assume sensitivity = 1
         p2 = p2 / sum(p2)
 
@@ -62,7 +92,6 @@ def plot_removed_points(beta_range=[1, 6], x_range=[-4, 4]):
     x = np.linspace(x_range[0], x_range[1], 1000)
     ## Plot the number of removed points
     betas = np.arange(beta_range[0], beta_range[1], .3)
-    verbose = False
 
     plt.figure(figsize=(10, 10))
 
@@ -74,9 +103,9 @@ def plot_removed_points(beta_range=[1, 6], x_range=[-4, 4]):
     alphas = np.arange(2, 100, 0.3)
 
     for beta in betas:
-        p1 = beta_exponential.beta_exponent(x, beta=beta, shift=0)
+        p1 = beta_exponent(x, beta=beta, shift=0)
         p1 = p1 / sum(p1)  # rescale
-        p2 = beta_exponential.beta_exponent(x, beta=beta,
+        p2 = beta_exponent(x, beta=beta,
                                             shift=1)  # assume sensitivity = 1
         p2 = p2 / sum(p2)
 
