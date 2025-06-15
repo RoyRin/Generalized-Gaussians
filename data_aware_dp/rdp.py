@@ -19,7 +19,6 @@ DEFAULT_Q_VALUE = 4096 / 45000
 
 CWD = Path.cwd()
 
-
 BASEDIR = CWD
 
 mathematica_datadir = BASEDIR / "mathematica_simulations/"
