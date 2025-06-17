@@ -86,25 +86,6 @@ def beta_exponential_sampler_from_scale(beta, scale):
     #return rv.rvs
 
 
-# used to be inverse_transform_sampling_beta_exponential__torch
-def __beta_exponential_sampler__torch(beta, c, device=None):
-    """ 
-    return sampler function from beta exponential distribution (function can be called with no arguments or with size = # argument)
-
-    """
-    #device = torch.cuda()
-    if device is None:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    sampler = beta_exponential_sampler(beta, c)
-
-    def torch_sampler(size=None):
-        if size is None:
-            return torch.from_numpy(sampler()).to(device)
-        return torch.from_numpy(sampler(size=size)).to(device)
-
-    return torch_sampler
-
 
 def beta_exponential_sampler__torch(beta, scale, device=None, seed=0):
     """ EPD sampler - taken from https://github.com/scipy/scipy/blob/v1.10.1/scipy/stats/_continuous_distns.py#L9398-L9482
