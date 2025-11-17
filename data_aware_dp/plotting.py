@@ -47,7 +47,7 @@ def beta_exponent(x, beta, c, k=None, shift=0.):
 def plot_rdp_scaling(betas=None, x_range=[-4, 4], y_max=25):
     x = np.linspace(x_range[0], x_range[1], 1000)
     if betas is None:
-        beta_range = [.1, 4]
+        beta_range = [.1, 2]
         betas = np.arange(beta_range[0], beta_range[1], .4)
     verbose = False
 
@@ -82,7 +82,7 @@ def plot_rdp_scaling(betas=None, x_range=[-4, 4], y_max=25):
     plt.show()
 
 
-def plot_removed_points(beta_range=[1, 6], x_range=[-4, 4]):
+def plot_removed_points(beta_range=[1, 2], x_range=[-4, 4]):
 
     x = np.linspace(x_range[0], x_range[1], 1000)
     ## Plot the number of removed points

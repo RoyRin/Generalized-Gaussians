@@ -28,7 +28,7 @@ def cli(ctx):
 
 def get_betas(beta_count=40):
     s = int(beta_count / 4)  #
-    betas = list(np.linspace(1, 2.5, 3 * s)) + list(np.linspace(2.6, 4, s))
+    betas = list(np.linspace(1, 2, beta_count))
 
     betas = [float(beta) for beta in betas] + [None]
     return betas
@@ -84,8 +84,7 @@ def linear_regression(ctx, save_dir, epsilon_count, epsilon_min, epsilon_max,
     ]
 
     #betas = get_betas(beta_count)
-    betas = list(np.linspace(1.5, 2.5, beta_count))
-    betas = list(np.linspace(1, 4, beta_count))
+    betas = list(np.linspace(1, 2, beta_count))
     betas = [
         round((1 + (b // 0.02)) * 0.02, 2) for b in betas
     ]  # round beta to the nearest 0.02 (for ease of RDP val pre-computation)

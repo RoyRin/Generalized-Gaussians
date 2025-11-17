@@ -273,7 +273,7 @@ if __name__ == "__main__":
     sigmas = [round(s, 2) for s in np.linspace(.5, 3., sigma_N)]
     betas = list(
         set([None, 2.0] + [round(b, 2)
-                           for b in np.linspace(1, 4, beta_N - 2)]))
+                           for b in np.linspace(1, 2, beta_N - 2)]))
 
     if index == -1:
         betas = [None]

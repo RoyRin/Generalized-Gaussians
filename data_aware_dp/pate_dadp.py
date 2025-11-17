@@ -118,7 +118,7 @@ trials = 100
 total_scale_count, beta_count = 401, 40
 scales = np.linspace(.1, 100.1, total_scale_count)
 scales = np.array([round(x, 2) for x in scales])
-betas = [round(x, 2) for x in np.linspace(1, 4., beta_count)]
+betas = [round(x, 2) for x in np.linspace(1, 2., beta_count)]
 
 scale_betas = list(itertools.product(scales, betas))
 
