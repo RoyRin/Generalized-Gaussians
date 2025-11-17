@@ -30,6 +30,6 @@ data_aware_dp/
 └── wide_resnet.py
 ```
 
-# terminology
+# Terminology
 
 There are several terms for the generalized gaussian distribution; in the code it is sometimes referred to as `beta exponenital`, `generalized gaussians`, or `exponential power distribution`.

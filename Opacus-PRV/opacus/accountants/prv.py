@@ -115,12 +115,9 @@ class PRVAccountant(IAccountant):
         if beta is not None and self.PoissonSubsampledEPMPRV_f is None and len(
                 self.history) > 0:
             # assume the same noise_multiplier for all steps
-            print(self.history)
-            print("should only be called once")
-
+            
             noise_multiplier, sample_rate, _ = self.history[0]
 
-            print(f"using noise_multiplier = {noise_multiplier}")
             self.PoissonSubsampledEPMPRV_f = PoissonSubsampledEPMPRV(
                 sample_rate=sample_rate,
                 noise_multiplier=noise_multiplier,
