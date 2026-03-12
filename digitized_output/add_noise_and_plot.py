@@ -142,11 +142,6 @@ def plot_with_error_bars(beta, panels, output_path):
         ax.legend(loc="best", fontsize=10)
         ax.grid(True, alpha=0.3)
 
-    # Add suptitle if appropriate
-    suptitle = get_suptitle(os.path.basename(output_path))
-    if suptitle:
-        fig.suptitle(suptitle, fontsize=15, fontweight='bold', y=0.995)
-
     plt.tight_layout()
     fig.savefig(output_path, dpi=200, bbox_inches="tight")
     print(f"  Saved PNG: {output_path}")
